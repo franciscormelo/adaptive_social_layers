@@ -44,7 +44,7 @@ namespace adaptive_social_layers
 
             double mag = sqrt(pow(person.velocity.x,2) + pow(person.velocity.y, 2));
             double factor = 1.0 + mag * factor_;
-            double point = get_radius(cutoff_, amplitude_, covar_ * factor );
+            double point = get_radius(cutoff_, amplitude_, varx_ * factor );
 
             *min_x = std::min(*min_x, person.position.x - point);
             *min_y = std::min(*min_y, person.position.y - point);
@@ -72,8 +72,8 @@ namespace adaptive_social_layers
             double angle = atan2(person.velocity.y, person.velocity.x);
             double mag = sqrt(pow(person.velocity.x,2) + pow(person.velocity.y, 2));
             double factor = 1.0 + mag * factor_;
-            double base = get_radius(cutoff_, amplitude_, covar_);
-            double point = get_radius(cutoff_, amplitude_, covar_ * factor );
+            double base = get_radius(cutoff_, amplitude_, varx_);
+            double point = get_radius(cutoff_, amplitude_, varx_ * factor );
 
             unsigned int width = std::max(1, int( (base + point) / res )),
                           height = std::max(1, int( (base + point) / res ));
@@ -129,9 +129,9 @@ namespace adaptive_social_layers
                   double diff = angles::shortest_angular_distance(angle, ma);
                   double a;
                   if(fabs(diff)<M_PI/2)
-                      a = gaussian(x,y,cx,cy,amplitude_,covar_*factor,covar_,angle);
+                      a = gaussian(x,y,cx,cy,amplitude_,varx_*factor,vary_,angle);
                   else
-                      a = gaussian(x,y,cx,cy,amplitude_,covar_,       covar_,0);
+                      a = gaussian(x,y,cx,cy,amplitude_,varx_,       vary_,0);
 
                   if(a < cutoff_)
                     continue;
@@ -146,7 +146,8 @@ namespace adaptive_social_layers
     void ProxemicLayer::configure(ProxemicLayerConfig &config, uint32_t level) {
         cutoff_ = config.cutoff;
         amplitude_ = config.amplitude;
-        covar_ = config.covariance;
+        varx_ = config.varx;
+        vary_ = config.vary;
         factor_ = config.factor;
         people_keep_time_ = ros::Duration(config.keep_time);
         enabled_ = config.enabled;

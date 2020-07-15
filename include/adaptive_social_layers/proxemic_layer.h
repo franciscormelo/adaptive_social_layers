@@ -21,7 +21,7 @@ namespace adaptive_social_layers
 
     protected:
       void configure(ProxemicLayerConfig &config, uint32_t level);
-      double cutoff_, amplitude_, covar_, factor_;
+      double cutoff_, amplitude_, varx_,vary_, factor_;
       dynamic_reconfigure::Server<ProxemicLayerConfig>* server_;
       dynamic_reconfigure::Server<ProxemicLayerConfig>::CallbackType f_;
   };
@@ -29,4 +29,3 @@ namespace adaptive_social_layers
 
 
 #endif
-
