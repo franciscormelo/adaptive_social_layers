@@ -67,6 +67,8 @@ namespace adaptive_social_layers
         costmap_2d::Costmap2D* costmap = layered_costmap_->getCostmap();
         double res = costmap->getResolution();
 
+        int idx = 1;
+
         for(p_it = transformed_people_.begin(); p_it != transformed_people_.end(); ++p_it){
             people_msgs::Person person = *p_it;
             double angle = atan2(person.velocity.y, person.velocity.x);
@@ -129,14 +131,22 @@ namespace adaptive_social_layers
                   double diff = angles::shortest_angular_distance(angle, ma);
                   double a;
                   if(fabs(diff)<M_PI/2)
-                      a = gaussian(x,y,cx,cy,amplitude_,varx_*factor,vary_,angle);
+                    if (idx == people_list_.people.size() )
+                        a = gaussian(x,y,cx,cy,amplitude_,groupvar_,groupvar_,angle);
+                    else
+                        a = gaussian(x,y,cx,cy,amplitude_,varx_*factor_,vary_,angle);
                   else
-                      a = gaussian(x,y,cx,cy,amplitude_,varx_,       vary_,0);
+                    if (idx == people_list_.people.size() )
+                        a = gaussian(x,y,cx,cy,amplitude_,groupvar_,groupvar_,0);
+                    else
+                        a = gaussian(x,y,cx,cy,amplitude_,varx_*factor_,vary_,0);
 
                   if(a < cutoff_)
                     continue;
                   unsigned char cvalue = (unsigned char) a;
                   costmap->setCost(i+dx, j+dy, std::max(cvalue, old_cost));
+
+                  idx++;
 
               }
             }
@@ -148,6 +158,7 @@ namespace adaptive_social_layers
         amplitude_ = config.amplitude;
         varx_ = config.varx;
         vary_ = config.vary;
+        groupvar_ = config.groupvar;
         factor_ = config.factor;
         people_keep_time_ = ros::Duration(config.keep_time);
         enabled_ = config.enabled;
