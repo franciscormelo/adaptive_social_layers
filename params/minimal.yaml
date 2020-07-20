@@ -1,0 +1,25 @@
+plugins: 
+    - {name: static_map,       type: "costmap_2d::StaticLayer"}
+    - {name: simple_layer,           type: "simple_layer_namespace::SimpleLayer"}
+    - {name: grid_layer,           type: "simple_layer_namespace::GridLayer"}
+    - {name: social,           type: "adaptive_social_layers::ProxemicLayer"}
+
+    
+
+publish_frequency: 1.0
+
+footprint: [[-0.42, -0.42], [-0.42, 0.42], [0.42, 0.42],  [0.42, -0.42]]
+inflation:
+    inflation_radius: 1
+    cost_scaling_factor: 20
+
+social:
+    enabled: True
+    cutoff: 186
+    amplitude: 254
+    varx: 0.6
+    vary: 0.6
+    factor: 2
+    keep_imte: 0.75
+
+

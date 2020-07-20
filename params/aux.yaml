@@ -1,0 +1,27 @@
+plugins: 
+    - {name: static_map,       type: "costmap_2d::StaticLayer"}
+    - {name: simple_layer,           type: "simple_layer_namespace::SimpleLayer"}
+    - {name: grid_layer,           type: "simple_layer_namespace::GridLayer"}
+    - {name: obstacles,        type: "costmap_2d::VoxelLayer"}
+    - {name: inflation,        type: "costmap_2d::InflationLayer"}
+    - {name: social,           type: "social_navigation_layers::ProxemicLayer"}
+    
+
+publish_frequency: 1.0
+
+footprint: [[-0.42, -0.42], [-0.42, 0.42], [0.42, 0.42],  [0.42, -0.42]]
+inflation:
+    inflation_radius: 1
+    cost_scaling_factor: 20
+
+obstacles:
+    observation_sources: laser_scan_sensor1 laser_scan_sensor2
+    laser_scan_sensor1: {sensor_frame: /nav_hokuyo_laser_link, data_type: LaserScan, topic: scan_filtered, marking: true, clearing: true}
+    laser_scan_sensor2: {sensor_frame: /nav_hokuyo_rear_laser_link, data_type: LaserScan, topic: scan_filtered_rear, marking: true, clearing: true}
+social:
+    enabled: True
+    cutoff: 10.0
+    amplitude: 255.0
+    covariance: 5
+    factor: 5.0
+    keep_imte: 0.75

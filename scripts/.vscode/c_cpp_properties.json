@@ -1,0 +1,30 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "",
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "/home/flash/catkin_ws/devel/include/**",
+                "/opt/ros/kinetic/include/**",
+                "/home/flash/catkin_ws/src/adaptive_social_layers/include/**",
+                "/home/flash/catkin_ws/src/approach_group/include/**",
+                "/home/flash/catkin_ws/src/BehaviorTree.CPP/include/**",
+                "/home/flash/catkin_ws/src/simple_layers/include/**",
+                "/home/flash/catkin_ws/src/vizzy_behavior_trees/include/**",
+                "/home/flash/catkin_ws/src/vizzy/vizzy_gazebo/include/**",
+                "/home/flash/catkin_ws/src/vizzy/vizzy_navigation/include/**",
+                "/home/flash/catkin_ws/src/vizzy/vizzy_rviz_plugins/include/**",
+                "/home/flash/catkin_ws/src/vizzy/vizzy_sensors/include/**",
+                "/usr/include/**"
+            ],
+            "name": "ROS",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}
