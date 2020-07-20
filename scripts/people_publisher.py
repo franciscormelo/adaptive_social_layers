@@ -10,7 +10,7 @@ from algorithm import SpaceModeling
 import copy
 
 STRIDE = 0.65 # in m
- 
+
 def callback(data):
     group = []
     if not data.poses:
@@ -43,14 +43,14 @@ def callback(data):
     sy = float(pparams[0][1])/100
     gvar = float(gparams[0]) / 100
 
-    
+
     rospy.set_param("/costmap_node/costmap/social/varx", sx)
     rospy.set_param("/costmap_node/costmap/social/vary", sy)
     rospy.set_param("/costmap_node/costmap/social/groupvar", gvar)
-  
+
     talker(group)
-    
-# VER SE O SET PARAM ESTA A FUNCIONAR BEM
+
+
 
 def talker(group):
     pub = None
@@ -66,11 +66,11 @@ def talker(group):
         pub.publish(p)
     else:
         for person in group:
-  
+
             p1 = None
             p1 = Person()
-            
-        
+
+
             #p1.name = "hello"
             p1.position.x = person[0]
             p1.position.y = person[1]
@@ -80,7 +80,7 @@ def talker(group):
                 p1.velocity.x = 1
             else:
                 p1.velocity.x = -1
-            
+
 
             p1.velocity.y = math.tan(person[2])
             p1.velocity.z = 0

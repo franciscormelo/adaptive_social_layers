@@ -6,6 +6,8 @@
 #include <people_msgs/People.h>
 #include <boost/thread.hpp>
 
+
+
 namespace adaptive_social_layers
 {
   class SocialLayer : public costmap_2d::Layer

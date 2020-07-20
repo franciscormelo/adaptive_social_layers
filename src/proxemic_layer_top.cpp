@@ -1,11 +1,7 @@
-
 #include <adaptive_social_layers/proxemic_layer.h>
 #include <math.h>
 #include <angles/angles.h>
 #include <pluginlib/class_list_macros.h>
-
-
-
 PLUGINLIB_EXPORT_CLASS(adaptive_social_layers::ProxemicLayer, costmap_2d::Layer)
 
 using costmap_2d::NO_INFORMATION;
@@ -42,20 +38,20 @@ namespace adaptive_social_layers
     void ProxemicLayer::updateBoundsFromPeople(double* min_x, double* min_y, double* max_x, double* max_y)
     {
         std::list<people_msgs::Person>::iterator p_it;
+        double var = 0;
+        if (varx_ > groupvar_)
+            var = varx_;
+        else
+            var = groupvar_;
+
 
         for(p_it = transformed_people_.begin(); p_it != transformed_people_.end(); ++p_it){
             people_msgs::Person person = *p_it;
 
             double mag = sqrt(pow(person.velocity.x,2) + pow(person.velocity.y, 2));
             double factor = 1.0 + mag * factor_;
-            double var = 0;
-            if (next(p_it) == transformed_people_.end())
-                var = groupvar_;
-            else
-                var = varx_;
-
             double point = get_radius(cutoff_, amplitude_, var * factor_ );
-
+        
             *min_x = std::min(*min_x, person.position.x - point);
             *min_y = std::min(*min_y, person.position.y - point);
             *max_x = std::max(*max_x, person.position.x + point);
@@ -76,20 +72,16 @@ namespace adaptive_social_layers
         std::list<people_msgs::Person>::iterator p_it;
         costmap_2d::Costmap2D* costmap = layered_costmap_->getCostmap();
         double res = costmap->getResolution();
+
         int idx = 1;
+
         for(p_it = transformed_people_.begin(); p_it != transformed_people_.end(); ++p_it){
             people_msgs::Person person = *p_it;
             double angle = atan2(person.velocity.y, person.velocity.x);
             double mag = sqrt(pow(person.velocity.x,2) + pow(person.velocity.y, 2));
             double factor = 1.0 + mag * factor_;
-
-            double var = 0;
-            if (next(p_it) == transformed_people_.end())
-                var = groupvar_;
-            else
-                var = varx_;
-            double base = get_radius(cutoff_, amplitude_, var);
-            double point = get_radius(cutoff_, amplitude_, var * factor_ );
+            double base = get_radius(cutoff_, amplitude_, varx_);
+            double point = get_radius(cutoff_, amplitude_, varx_ * factor_ );
 
             unsigned int width = std::max(1, int( (base + point) / res )),
                           height = std::max(1, int( (base + point) / res ));
@@ -145,42 +137,23 @@ namespace adaptive_social_layers
                   double diff = angles::shortest_angular_distance(angle, ma);
                   double a;
 
-                  if (next(p_it) != transformed_people_.end()){
-
-                
-                // if(fabs(diff)<M_PI/2)
-                //     if (next(p_it) == transformed_people_.end())
-                //         a = gaussian(x,y,cx,cy,amplitude_,groupvar_,groupvar_,angle);
-                //     else
-                //         a = gaussian(x,y,cx,cy,amplitude_,varx_*factor_,vary_,angle);
-                // else
-                //     if (next(p_it) == transformed_people_.end())
-                //         a = gaussian(x,y,cx,cy,amplitude_,groupvar_,groupvar_,0);
-                //     else
-                //         a = gaussian(x,y,cx,cy,amplitude_,varx_*factor_,vary_,0);
-            
-                  //}
-                
-
-                //   if(fabs(diff)<M_PI/2)
-                //       a = gaussian(x,y,cx,cy,amplitude_,groupvar_*2,groupvar_*2,angle);
-                //   else
-                //       a = gaussian(x,y,cx,cy,amplitude_,groupvar_*2,       groupvar_*2,0);
-                    if(fabs(diff)<M_PI/2)
-                        a = gaussian(x,y,cx,cy,amplitude_,varx_*factor_,vary_,angle);
+                  
+                  if(fabs(diff)<M_PI/2)
+                    if (idx == people_list_.people.size() )
+                        a = gaussian(x,y,cx,cy,amplitude_,groupvar_,groupvar_,angle);
                     else
-                        a = gaussian(x,y,cx,cy,amplitude_,varx_,       vary_,0);
-                    }
-
-
-
-
-
+                        a = gaussian(x,y,cx,cy,amplitude_,varx_*factor_,vary_,angle);
+                  else
+                    if (idx == people_list_.people.size() )
+                        a = gaussian(x,y,cx,cy,amplitude_,groupvar_,groupvar_,0);
+                    else
+                        a = gaussian(x,y,cx,cy,amplitude_,varx_*factor_,vary_,0);
 
                   if(a < cutoff_)
                     continue;
                   unsigned char cvalue = (unsigned char) a;
                   costmap->setCost(i+dx, j+dy, std::max(cvalue, old_cost));
+
                   idx++;
 
               }
@@ -193,8 +166,8 @@ namespace adaptive_social_layers
         amplitude_ = config.amplitude;
         varx_ = config.varx;
         vary_ = config.vary;
-        factor_ = config.factor;
         groupvar_ = config.groupvar;
+        factor_ = config.factor;
         people_keep_time_ = ros::Duration(config.keep_time);
         enabled_ = config.enabled;
     }

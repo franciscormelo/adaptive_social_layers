@@ -5,6 +5,8 @@
 #include <dynamic_reconfigure/server.h>
 #include <adaptive_social_layers/ProxemicLayerConfig.h>
 
+
+
 double gaussian(double x, double y, double x0, double y0, double A, double varx, double vary, double skew);
 double get_radius(double cutoff, double A, double var);
 
