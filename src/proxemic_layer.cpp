@@ -38,14 +38,20 @@ namespace adaptive_social_layers
     void ProxemicLayer::updateBoundsFromPeople(double* min_x, double* min_y, double* max_x, double* max_y)
     {
         std::list<people_msgs::Person>::iterator p_it;
+        double var = 0;
+        if (varx_ > groupvar_)
+            var = varx_;
+        else
+            var = groupvar_;
+
 
         for(p_it = transformed_people_.begin(); p_it != transformed_people_.end(); ++p_it){
             people_msgs::Person person = *p_it;
 
             double mag = sqrt(pow(person.velocity.x,2) + pow(person.velocity.y, 2));
             double factor = 1.0 + mag * factor_;
-            double point = get_radius(cutoff_, amplitude_, varx_ * factor );
-
+            double point = get_radius(cutoff_, amplitude_, var * factor_ );
+        
             *min_x = std::min(*min_x, person.position.x - point);
             *min_y = std::min(*min_y, person.position.y - point);
             *max_x = std::max(*max_x, person.position.x + point);
@@ -75,7 +81,7 @@ namespace adaptive_social_layers
             double mag = sqrt(pow(person.velocity.x,2) + pow(person.velocity.y, 2));
             double factor = 1.0 + mag * factor_;
             double base = get_radius(cutoff_, amplitude_, varx_);
-            double point = get_radius(cutoff_, amplitude_, varx_ * factor );
+            double point = get_radius(cutoff_, amplitude_, varx_ * factor_ );
 
             unsigned int width = std::max(1, int( (base + point) / res )),
                           height = std::max(1, int( (base + point) / res ));
@@ -130,6 +136,8 @@ namespace adaptive_social_layers
                   double ma = atan2(y-cy,x-cx);
                   double diff = angles::shortest_angular_distance(angle, ma);
                   double a;
+
+                  
                   if(fabs(diff)<M_PI/2)
                     if (idx == people_list_.people.size() )
                         a = gaussian(x,y,cx,cy,amplitude_,groupvar_,groupvar_,angle);

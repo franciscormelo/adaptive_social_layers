@@ -37,15 +37,17 @@ def callback(data):
     app = SpaceModeling(groups)
     pparams,gparams = app.solve()
 
+
     factor = rospy.get_param("/costmap_node/costmap/social/factor")
-    sx = (pparams[0][0]/100)/factor
-    sy = pparams[0][1]/100
-    gvar = gparams[0] / 100
+    sx = (float(pparams[0][0])/100)/factor
+    sy = float(pparams[0][1])/100
+    gvar = float(gparams[0]) / 100
+
     
     rospy.set_param("/costmap_node/costmap/social/varx", sx)
     rospy.set_param("/costmap_node/costmap/social/vary", sy)
     rospy.set_param("/costmap_node/costmap/social/groupvar", gvar)
-    #fazer set ao parametro do raio do grupo
+  
     talker(group)
     
 # VER SE O SET PARAM ESTA A FUNCIONAR BEM
@@ -57,14 +59,14 @@ def talker(group):
 
     #while not rospy.is_shutdown():
     p = People()
-    p.header.frame_id = "map" #devia ser map FIX!!!!!!
+    p.header.frame_id = "base_footprint" #devia ser map FIX!!!!!!
     p.header.stamp = rospy.Time.now()
 
     if not group:
         pub.publish(p)
     else:
         for person in group:
-            print(person)
+  
             p1 = None
             p1 = Person()
             
@@ -78,6 +80,7 @@ def talker(group):
                 p1.velocity.x = 1
             else:
                 p1.velocity.x = -1
+            
 
             p1.velocity.y = math.tan(person[2])
             p1.velocity.z = 0
@@ -96,7 +99,7 @@ def talker(group):
 
 
         pub.publish(p)
-        #rate.sleep()
+
 
 def calc_o_space(persons):
     """Calculates the o-space center of the group given group members pose"""
