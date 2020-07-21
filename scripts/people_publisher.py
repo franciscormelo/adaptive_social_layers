@@ -9,39 +9,75 @@ import math
 from algorithm import SpaceModeling
 import copy
 
+
 STRIDE = 0.65 # in m
+
+def rotate(px, py, angle):
+    """
+    Rotate a point counterclockwise by a given angle around a given origin.
+
+    The angle should be given in radians.
+    """
+
+    qx = math.cos(angle) * px - math.sin(angle) * py
+    qy = math.sin(angle) * px + math.cos(angle) * py
+    return qx, qy
 
 def callback(data):
     group = []
+    listener = tf.TransformListener()
     if not data.poses:
         group = []
     else:
+        while not rospy.is_shutdown():
+            try:
+                (trans,rot) = listener.lookupTransform('/map', '/base_footprint', rospy.Time(0))
+                break
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                continue
+        tx = trans[0]
+        ty = trans[1]
+        t_quarterion = rot
+        (t_roll, t_pitch, t_yaw) = tf.transformations.euler_from_quaternion(t_quarterion)
+
+
         for pose in data.poses:
             rospy.loginfo("Person Detected")
 
             quartenion = [pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w]
             (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(quartenion)
 
-            pose_person = [pose.position.x, pose.position.y, yaw] #in base_footprint
+            (px, py) = rotate(pose.position.x, pose.position.y, t_yaw) 
+            pose_x = px + tx
+            pose_y = py + ty
+            pose_yaw = yaw + t_yaw
+
+            pose_person = [pose_x, pose_y, pose_yaw]
             #fazer transofmracoa para map FIX!!!!!!
             group.append(pose_person)
+
+       
+
+
+
+
 
     #rospy.loginfo(group)
     aux_group = copy.deepcopy(group)
     groups = [aux_group]
     for gp in groups:
         for p in gp:
-            p[0] = p[0] * 100
-            p[1] = p[1] * 100
+            p[0] = p[0] * 100 #algorithm uses cm 
+            p[1] = p[1] * 100 # m to cm
 
     app = SpaceModeling(groups)
     pparams,gparams = app.solve()
 
 
     factor = rospy.get_param("/costmap_node/costmap/social/factor")
-    sx = (float(pparams[0][0])/100)/factor
-    sy = float(pparams[0][1])/100
-    gvar = float(gparams[0]) / 100
+    sx = (float(pparams[0][0])/100)/factor # cm to m
+    sy = float(pparams[0][1])/100 # cm to m
+    gvar = float(gparams[0]) / 100  # cm to m
 
 
     rospy.set_param("/costmap_node/costmap/social/varx", sx)
@@ -59,7 +95,7 @@ def talker(group):
 
     #while not rospy.is_shutdown():
     p = People()
-    p.header.frame_id = "base_footprint" #devia ser map FIX!!!!!!
+    p.header.frame_id = "map" 
     p.header.stamp = rospy.Time.now()
 
     if not group:
@@ -74,7 +110,8 @@ def talker(group):
             #p1.name = "hello"
             p1.position.x = person[0]
             p1.position.y = person[1]
-            p1.position.z = 0
+            p1.position.z = person[2]
+            #p1.orientation = person[2]
 
             if person[2] > 0:
                 p1.velocity.x = 1
@@ -96,6 +133,7 @@ def talker(group):
         p1.position.x = center[0]
         p1.position.y = center[1]
         p.people.append(p1)
+        p1.position.y = 0
 
 
         pub.publish(p)
