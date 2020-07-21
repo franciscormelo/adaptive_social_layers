@@ -74,7 +74,8 @@ def callback(data):
     pparams,gparams = app.solve()
 
 
-    factor = rospy.get_param("/costmap_node/costmap/social/factor")
+    #factor = rospy.get_param("/costmap_node/costmap/social/factor")
+    factor = 2
     sx = (float(pparams[0][0])/100)/factor # cm to m
     sy = float(pparams[0][1])/100 # cm to m
     gvar = float(gparams[0]) / 100  # cm to m
@@ -132,8 +133,15 @@ def talker(group):
         center = calc_o_space(group)
         p1.position.x = center[0]
         p1.position.y = center[1]
+        p1.position.z = 0
+
+        if 0 > 0:
+                p1.velocity.x = 1
+        else:
+                p1.velocity.x = -1
+        p1.velocity.y = math.tan(0)
         p.people.append(p1)
-        p1.position.y = 0
+        
 
 
         pub.publish(p)

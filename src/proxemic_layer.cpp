@@ -3,7 +3,7 @@
 #include <math.h>
 #include <angles/angles.h>
 #include <pluginlib/class_list_macros.h>
-
+#include <ros/console.h>
 
 
 PLUGINLIB_EXPORT_CLASS(adaptive_social_layers::ProxemicLayer, costmap_2d::Layer)
@@ -50,16 +50,16 @@ namespace adaptive_social_layers
             double factor = 1.0 + mag * factor_;
             double var = 0;
             if (next(p_it) == transformed_people_.end())
-                var = groupvar_;
+                var = groupvar_ ;
             else
-                var = varx_;
+                var = varx_ * factor_;
 
-            double point = get_radius(cutoff_, amplitude_, var * factor_ );
+            double point = get_radius(cutoff_, amplitude_, var );
 
-            *min_x = std::min(*min_x, person.position.x - point);
-            *min_y = std::min(*min_y, person.position.y - point);
-            *max_x = std::max(*max_x, person.position.x + point);
-            *max_y = std::max(*max_y, person.position.y + point);
+            *min_x = std::min(*min_x, person.position.x - point - 0);
+            *min_y = std::min(*min_y, person.position.y - point - 0);
+            *max_x = std::max(*max_x, person.position.x + point + 0);
+            *max_y = std::max(*max_y, person.position.y + point + 0);
 
         }
     }
@@ -76,20 +76,29 @@ namespace adaptive_social_layers
         std::list<people_msgs::Person>::iterator p_it;
         costmap_2d::Costmap2D* costmap = layered_costmap_->getCostmap();
         double res = costmap->getResolution();
-        int idx = 1;
+        
         for(p_it = transformed_people_.begin(); p_it != transformed_people_.end(); ++p_it){
             people_msgs::Person person = *p_it;
             double angle = atan2(person.velocity.y, person.velocity.x);
             double mag = sqrt(pow(person.velocity.x,2) + pow(person.velocity.y, 2));
             double factor = 1.0 + mag * factor_;
 
-            double var = 0;
-            if (next(p_it) == transformed_people_.end())
+            double var;
+            double varp;
+            if (next(p_it) == transformed_people_.end()){
                 var = groupvar_;
-            else
+                varp = groupvar_ ;
+            }
+
+            else{
                 var = varx_;
+                varp = varx_*factor_;
+            }
+
+
+
             double base = get_radius(cutoff_, amplitude_, var);
-            double point = get_radius(cutoff_, amplitude_, var * factor_ );
+            double point = get_radius(cutoff_, amplitude_, varp);
 
             unsigned int width = std::max(1, int( (base + point) / res )),
                           height = std::max(1, int( (base + point) / res ));
@@ -136,52 +145,61 @@ namespace adaptive_social_layers
                    by = oy + res / 2;
             for(int i=start_x;i<end_x;i++){
                 for(int j=start_y;j<end_y;j++){
-                  unsigned char old_cost = costmap->getCost(i+dx, j+dy);
-                  if(old_cost == costmap_2d::NO_INFORMATION)
+                    unsigned char old_cost = costmap->getCost(i+dx, j+dy);
+                    if(old_cost == costmap_2d::NO_INFORMATION)
                     continue;
 
-                  double x = bx+i*res, y = by+j*res;
-                  double ma = atan2(y-cy,x-cx);
-                  double diff = angles::shortest_angular_distance(angle, ma);
-                  double a;
+                    double x = bx+i*res, y = by+j*res;
+                    double ma = atan2(y-cy,x-cx);
+                    double diff = angles::shortest_angular_distance(angle, ma);
+                    double a;
+                    if (next(p_it) != transformed_people_.end()){
+                        if(fabs(diff)<M_PI/2){
+                            if (next(p_it) != transformed_people_.end())
+                                a = gaussian(x,y,cx,cy,amplitude_,varx_*factor_,vary_,person.position.z);
+                            else
+                                a = gaussian(x,y,cx,cy,amplitude_,groupvar_,groupvar_,person.position.z);
+                            }
 
-                  if (next(p_it) != transformed_people_.end()){
+                        else{
+                            if (next(p_it) != transformed_people_.end())
+                                a = gaussian(x,y,cx,cy,amplitude_,varx_*factor_,vary_,person.position.z);  
+                            else 
+                                a = gaussian(x,y,cx,cy,amplitude_,groupvar_,groupvar_,person.position.z);                
+                        }
+                    }
 
-                
-                // if(fabs(diff)<M_PI/2)
-                //     if (next(p_it) == transformed_people_.end())
-                //         a = gaussian(x,y,cx,cy,amplitude_,groupvar_,groupvar_,angle);
-                //     else
-                //         a = gaussian(x,y,cx,cy,amplitude_,varx_*factor_,vary_,angle);
-                // else
-                //     if (next(p_it) == transformed_people_.end())
-                //         a = gaussian(x,y,cx,cy,amplitude_,groupvar_,groupvar_,0);
-                //     else
-                //         a = gaussian(x,y,cx,cy,amplitude_,varx_*factor_,vary_,0);
+
             
-                  //}
+           
                 
 
                 //   if(fabs(diff)<M_PI/2)
                 //       a = gaussian(x,y,cx,cy,amplitude_,groupvar_*2,groupvar_*2,angle);
                 //   else
                 //       a = gaussian(x,y,cx,cy,amplitude_,groupvar_*2,       groupvar_*2,0);
-                    if(fabs(diff)<M_PI/2)
-                        a = gaussian(x,y,cx,cy,amplitude_,varx_*factor_,vary_,person.position.z);
-                    else
-                        a = gaussian(x,y,cx,cy,amplitude_,varx_,       vary_,person.position.z);
-                    }
 
 
+                        ROS_INFO("groupvar %f", groupvar_);
+                        ROS_INFO("vary %f", vary_);
+                        ROS_INFO("factor %f", factor_);
 
 
+                        
+                    // if(fabs(diff)<M_PI/2)
+                    //     a = gaussian(x,y,cx,cy,amplitude_,varx_*factor_,vary_,person.position.z);
+                    // else
+                    //     a = gaussian(x,y,cx,cy,amplitude_,varx_,       vary_,person.position.z);
+
+                
+                
 
 
-                  if(a < cutoff_)
-                    continue;
-                  unsigned char cvalue = (unsigned char) a;
-                  costmap->setCost(i+dx, j+dy, std::max(cvalue, old_cost));
-                  idx++;
+                    if(a < cutoff_)
+                        continue;
+                    unsigned char cvalue = (unsigned char) a;
+                    costmap->setCost(i+dx, j+dy, std::max(cvalue, old_cost));
+                  
 
               }
             }

@@ -25,6 +25,7 @@ social:
     amplitude: 254.0
     varx: 0.6
     vary: 0.6
+    groupvar: 0.7
     factor: 2
     keep_time: 0.75
 
