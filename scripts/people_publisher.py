@@ -57,11 +57,6 @@ def callback(data):
             group.append(pose_person)
 
        
-
-
-
-
-
     #rospy.loginfo(group)
     aux_group = copy.deepcopy(group)
     groups = [aux_group]
@@ -107,24 +102,10 @@ def talker(group):
             p1 = None
             p1 = Person()
 
-
-            #p1.name = "hello"
             p1.position.x = person[0]
             p1.position.y = person[1]
             p1.position.z = person[2]
             #p1.orientation = person[2]
-
-            if person[2] > 0:
-                p1.velocity.x = 1
-            else:
-                p1.velocity.x = -1
-
-
-            p1.velocity.y = math.tan(person[2])
-            p1.velocity.z = 0
-            p1.reliability = 0
-            # p1.tagnames = "hello"
-            # p1.tags = "hello"
             p.people.append(p1)
 
 
@@ -135,14 +116,7 @@ def talker(group):
         p1.position.y = center[1]
         p1.position.z = math.pi
 
-        if math.pi > 0:
-                p1.velocity.x = 1
-        else:
-                p1.velocity.x = -1
-        p1.velocity.y = math.tan(math.pi)
         p.people.append(p1)
-        
-
 
         pub.publish(p)
 
