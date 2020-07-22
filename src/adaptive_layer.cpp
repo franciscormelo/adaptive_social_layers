@@ -1,11 +1,11 @@
-#include <adaptive_social_layers/proxemic_layer.h>
+#include <adaptive_social_layers/adaptive_layer.h>
 #include <math.h>
 #include <angles/angles.h>
 #include <pluginlib/class_list_macros.h>
 #include <ros/console.h>
 
 
-PLUGINLIB_EXPORT_CLASS(adaptive_social_layers::ProxemicLayer, costmap_2d::Layer)
+PLUGINLIB_EXPORT_CLASS(adaptive_social_layers::AdaptiveLayer, costmap_2d::Layer)
 
 using costmap_2d::NO_INFORMATION;
 using costmap_2d::LETHAL_OBSTACLE;
@@ -29,16 +29,16 @@ double get_radius(double cutoff, double A, double var){
 
 namespace adaptive_social_layers
 {
-    void ProxemicLayer::onInitialize()
+    void AdaptiveLayer::onInitialize()
     {
         SocialLayer::onInitialize();
         ros::NodeHandle nh("~/" + name_), g_nh;
-        server_ = new dynamic_reconfigure::Server<ProxemicLayerConfig>(nh);
-        f_ = boost::bind(&ProxemicLayer::configure, this, _1, _2);
+        server_ = new dynamic_reconfigure::Server<AdaptiveLayerConfig>(nh);
+        f_ = boost::bind(&AdaptiveLayer::configure, this, _1, _2);
         server_->setCallback(f_);
     }
 
-    void ProxemicLayer::updateBoundsFromPeople(double* min_x, double* min_y, double* max_x, double* max_y)
+    void AdaptiveLayer::updateBoundsFromPeople(double* min_x, double* min_y, double* max_x, double* max_y)
     {
         std::list<people_msgs::Person>::iterator p_it;
 
@@ -63,7 +63,7 @@ namespace adaptive_social_layers
         }
     }
 
-    void ProxemicLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j){
+    void AdaptiveLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j){
         boost::recursive_mutex::scoped_lock lock(lock_);
         if(!enabled_) return;
 
@@ -188,7 +188,7 @@ namespace adaptive_social_layers
         }
     }
 
-    void ProxemicLayer::configure(ProxemicLayerConfig &config, uint32_t level) {
+    void AdaptiveLayer::configure(AdaptiveLayerConfig &config, uint32_t level) {
         cutoff_ = config.cutoff;
         amplitude_ = config.amplitude;
         varx_ = config.varx;

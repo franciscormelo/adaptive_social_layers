@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 generate_dynamic_reconfigure_options(
-  cfg/ProxemicLayer.cfg
+  cfg/AdaptiveLayer.cfg
 )
 
 catkin_package(
@@ -30,7 +30,7 @@ include_directories(
 ## add cpp library
 add_library(social_layers 
             src/social_layer.cpp
-            src/proxemic_layer.cpp 
+            src/adaptive_layer.cpp 
 )
 add_dependencies(social_layers ${${PROJECT_NAME}_EXPORTED_TARGETS})
 target_link_libraries(

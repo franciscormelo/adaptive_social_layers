@@ -1,9 +1,9 @@
-#ifndef PROXEMIC_LAYER_H_
-#define PROXEMIC_LAYER_H_
+#ifndef ADAPTIVE_LAYER_H_
+#define ADAPTIVE_LAYER_H_
 #include <ros/ros.h>
 #include <adaptive_social_layers/social_layer.h>
 #include <dynamic_reconfigure/server.h>
-#include <adaptive_social_layers/ProxemicLayerConfig.h>
+#include <adaptive_social_layers/AdaptiveLayerConfig.h>
 
 
 
@@ -12,20 +12,20 @@ double get_radius(double cutoff, double A, double var);
 
 namespace adaptive_social_layers
 {
-  class ProxemicLayer : public SocialLayer
+  class AdaptiveLayer : public SocialLayer
   {
     public:
-      ProxemicLayer() { layered_costmap_ = NULL; }
+      AdaptiveLayer() { layered_costmap_ = NULL; }
 
       virtual void onInitialize();
       virtual void updateBoundsFromPeople(double* min_x, double* min_y, double* max_x, double* max_y);
       virtual void updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j);
 
     protected:
-      void configure(ProxemicLayerConfig &config, uint32_t level);
+      void configure(AdaptiveLayerConfig &config, uint32_t level);
       double cutoff_, amplitude_, varx_,vary_, groupvar_, factor_;
-      dynamic_reconfigure::Server<ProxemicLayerConfig>* server_;
-      dynamic_reconfigure::Server<ProxemicLayerConfig>::CallbackType f_;
+      dynamic_reconfigure::Server<AdaptiveLayerConfig>* server_;
+      dynamic_reconfigure::Server<AdaptiveLayerConfig>::CallbackType f_;
   };
 };
 

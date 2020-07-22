@@ -2,7 +2,7 @@ plugins:
     - {name: static_map,       type: "costmap_2d::StaticLayer"}
     - {name: obstacles,        type: "costmap_2d::VoxelLayer"}
     - {name: inflation,        type: "costmap_2d::InflationLayer"}
-    - {name: social,           type: "adaptive_social_layers::ProxemicLayer"}
+    - {name: social,           type: "adaptive_social_layers::AdaptiveLayer"}
 
     
 
