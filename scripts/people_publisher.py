@@ -53,9 +53,6 @@ def callback(data):
             pose_y = py + ty
             pose_yaw = yaw + t_yaw
 
-            print(pose_x)
-            print(pose_y)
-            print(pose_yaw)
             #pose_person = [pose_x, pose_y, pose_yaw]
 
             pose_person = [pose.position.x, pose.position.y,yaw]
@@ -87,11 +84,11 @@ def callback(data):
     rospy.set_param("/costmap_node/costmap/social/vary", sy)
     rospy.set_param("/costmap_node/costmap/social/groupvar", gvar)
 
-    talker(group)
+    talker(group,sx,sy,gvar)
 
 
 
-def talker(group):
+def talker(group,sx,sy,gvar):
     pub = None
     pub = rospy.Publisher('/people', People, queue_size=10)
     p = None
@@ -113,6 +110,9 @@ def talker(group):
             p1.position.y = person[1]
             p1.position.z = person[2]
             #p1.orientation = person[2]
+            #p1.velocity.x = sx
+            #p1.velocity.y = sy
+            #Usar velocidades temporariamente para definir sx e sy
             p.people.append(p1)
 
 
@@ -122,6 +122,9 @@ def talker(group):
         p1.position.x = center[0]
         p1.position.y = center[1]
         p1.position.z = math.pi
+        #p1.velocity.x = gvar
+        #p1.velocity.y = gvar
+        #Usar velocidades temporariamente para definir gvar
 
         p.people.append(p1)
 

@@ -1,4 +1,3 @@
-
 #include <adaptive_social_layers/proxemic_layer.h>
 #include <math.h>
 #include <angles/angles.h>
