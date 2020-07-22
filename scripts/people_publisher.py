@@ -41,6 +41,7 @@ def callback(data):
         (t_roll, t_pitch, t_yaw) = tf.transformations.euler_from_quaternion(t_quarterion)
 
 
+
         for pose in data.poses:
             rospy.loginfo("Person Detected")
 
@@ -52,7 +53,12 @@ def callback(data):
             pose_y = py + ty
             pose_yaw = yaw + t_yaw
 
-            pose_person = [pose_x, pose_y, pose_yaw]
+            print(pose_x)
+            print(pose_y)
+            print(pose_yaw)
+            #pose_person = [pose_x, pose_y, pose_yaw]
+
+            pose_person = [pose.position.x, pose.position.y,yaw]
             #fazer transofmracoa para map FIX!!!!!!
             group.append(pose_person)
 
@@ -91,7 +97,7 @@ def talker(group):
 
     #while not rospy.is_shutdown():
     p = People()
-    p.header.frame_id = "map" 
+    p.header.frame_id = "/map" 
     p.header.stamp = rospy.Time.now()
 
     if not group:
