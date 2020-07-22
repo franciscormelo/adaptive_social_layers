@@ -81,6 +81,7 @@ def callback(data):
     sy = float(pparams[0][1])/100 # cm to m
     gvar = float(gparams[0]) / 100  # cm to m
 
+#alerar parmetro
 
     rospy.set_param("/costmap_node/costmap/social/varx", sx)
     rospy.set_param("/costmap_node/costmap/social/vary", sy)
