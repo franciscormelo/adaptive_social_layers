@@ -133,13 +133,13 @@ def talker(group):
         center = calc_o_space(group)
         p1.position.x = center[0]
         p1.position.y = center[1]
-        p1.position.z = 0
+        p1.position.z = math.pi
 
-        if 0 > 0:
+        if math.pi > 0:
                 p1.velocity.x = 1
         else:
                 p1.velocity.x = -1
-        p1.velocity.y = math.tan(0)
+        p1.velocity.y = math.tan(math.pi)
         p.people.append(p1)
         
 

@@ -48,7 +48,7 @@ namespace adaptive_social_layers
 
             double mag = sqrt(pow(person.velocity.x,2) + pow(person.velocity.y, 2));
             double factor = 1.0 + mag * factor_;
-            double var = 0;
+            double var;
             if (next(p_it) == transformed_people_.end())
                 var = groupvar_ ;
             else
@@ -56,10 +56,10 @@ namespace adaptive_social_layers
 
             double point = get_radius(cutoff_, amplitude_, var );
 
-            *min_x = std::min(*min_x, person.position.x - point - 0);
-            *min_y = std::min(*min_y, person.position.y - point - 0);
-            *max_x = std::max(*max_x, person.position.x + point + 0);
-            *max_y = std::max(*max_y, person.position.y + point + 0);
+            *min_x = std::min(*min_x, person.position.x - point - 5);
+            *min_y = std::min(*min_y, person.position.y - point - 5);
+            *max_x = std::max(*max_x, person.position.x + point + 5);
+            *max_y = std::max(*max_y, person.position.y + point + 5);
 
         }
     }
@@ -153,56 +153,38 @@ namespace adaptive_social_layers
                     double ma = atan2(y-cy,x-cx);
                     double diff = angles::shortest_angular_distance(angle, ma);
                     double a;
-                    if (next(p_it) != transformed_people_.end()){
-                        if(fabs(diff)<M_PI/2){
-                            if (next(p_it) != transformed_people_.end())
-                                a = gaussian(x,y,cx,cy,amplitude_,varx_*factor_,vary_,person.position.z);
-                            else
-                                a = gaussian(x,y,cx,cy,amplitude_,groupvar_,groupvar_,person.position.z);
-                            }
+    
 
-                        else{
-                            if (next(p_it) != transformed_people_.end())
-                                a = gaussian(x,y,cx,cy,amplitude_,varx_*factor_,vary_,person.position.z);  
-                            else 
-                                a = gaussian(x,y,cx,cy,amplitude_,groupvar_,groupvar_,person.position.z);                
-                        }
+                    if (next(p_it) != transformed_people_.end()){
+                        if(fabs(diff)<M_PI/2)
+                            a = gaussian(x,y,cx,cy,amplitude_,varx_*factor_,vary_,person.position.z);
+                        else
+                            a = gaussian(x,y,cx,cy,amplitude_,varx_,       vary_,person.position.z);
                     }
 
-
-            
-           
-                
-
-                //   if(fabs(diff)<M_PI/2)
-                //       a = gaussian(x,y,cx,cy,amplitude_,groupvar_*2,groupvar_*2,angle);
-                //   else
-                //       a = gaussian(x,y,cx,cy,amplitude_,groupvar_*2,       groupvar_*2,0);
-
-
-                        ROS_INFO("groupvar %f", groupvar_);
-                        ROS_INFO("vary %f", vary_);
-                        ROS_INFO("factor %f", factor_);
-
-
-                        
-                    // if(fabs(diff)<M_PI/2)
-                    //     a = gaussian(x,y,cx,cy,amplitude_,varx_*factor_,vary_,person.position.z);
-                    // else
-                    //     a = gaussian(x,y,cx,cy,amplitude_,varx_,       vary_,person.position.z);
-
-                
-                
+                    else{
+                        if(fabs(diff)<M_PI/2)
+                            a = gaussian(x,y,cx,cy,amplitude_,groupvar_,groupvar_,person.position.z);
+                        else
+                            a = gaussian(x,y,cx,cy,amplitude_,groupvar_,       groupvar_,person.position.z);
+                    }
+                    
 
 
                     if(a < cutoff_)
                         continue;
                     unsigned char cvalue = (unsigned char) a;
                     costmap->setCost(i+dx, j+dy, std::max(cvalue, old_cost));
+
+                    
+                        
+
                   
 
               }
             }
+
+
         }
     }
 
