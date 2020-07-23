@@ -40,10 +40,10 @@ namespace adaptive_social_layers
 
     void AdaptiveLayer::updateBoundsFromPeople(double* min_x, double* min_y, double* max_x, double* max_y)
     {
-        std::list<people_msgs::Person>::iterator p_it;
+        std::list<group_msgs::Person>::iterator p_it;
 
         for(p_it = transformed_people_.begin(); p_it != transformed_people_.end(); ++p_it){
-            people_msgs::Person person = *p_it;
+            group_msgs::Person person = *p_it;
 
             // double mag = sqrt(pow(person.velocity.x,2) + pow(person.velocity.y, 2));
             // double factor = 1.0 + mag * factor_;
@@ -72,12 +72,12 @@ namespace adaptive_social_layers
         if( cutoff_ >= amplitude_)
             return;
 
-        std::list<people_msgs::Person>::iterator p_it;
+        std::list<group_msgs::Person>::iterator p_it;
         costmap_2d::Costmap2D* costmap = layered_costmap_->getCostmap();
         double res = costmap->getResolution();
         
         for(p_it = transformed_people_.begin(); p_it != transformed_people_.end(); ++p_it){
-            people_msgs::Person person = *p_it;
+            group_msgs::Person person = *p_it;
             // double angle = atan2(person.velocity.y, person.velocity.x);
             // double mag = sqrt(pow(person.velocity.x,2) + pow(person.velocity.y, 2));
             // double factor = 1.0 + mag * factor_;

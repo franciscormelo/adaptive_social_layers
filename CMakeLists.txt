@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   angles
   costmap_2d
   dynamic_reconfigure
-  people_msgs
+  group_msgs
   pluginlib
   roscpp
 )
@@ -18,7 +18,7 @@ generate_dynamic_reconfigure_options(
 )
 
 catkin_package(
-    CATKIN_DEPENDS angles costmap_2d dynamic_reconfigure people_msgs pluginlib roscpp
+    CATKIN_DEPENDS angles costmap_2d dynamic_reconfigure group_msgs pluginlib roscpp
     INCLUDE_DIRS include
     LIBRARIES social_layers
 )

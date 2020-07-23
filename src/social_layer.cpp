@@ -17,7 +17,7 @@ namespace adaptive_social_layers
         people_sub_ = nh.subscribe("/people", 1, &SocialLayer::peopleCallback, this);
     }
 
-    void SocialLayer::peopleCallback(const people_msgs::People& people) {
+    void SocialLayer::peopleCallback(const group_msgs::People& people) {
         boost::recursive_mutex::scoped_lock lock(lock_);
         people_list_ = people;
     }
@@ -30,8 +30,8 @@ namespace adaptive_social_layers
         transformed_people_.clear();
 
         for(unsigned int i=0; i<people_list_.people.size(); i++){
-            people_msgs::Person& person = people_list_.people[i];
-            people_msgs::Person tpt;
+            group_msgs::Person& person = people_list_.people[i];
+            group_msgs::Person tpt;
             geometry_msgs::PointStamped pt, opt;
 
             try{

@@ -2,7 +2,7 @@
 
 
 import rospy
-from people_msgs.msg import People, Person
+from group_msgs.msg import People, Person
 from geometry_msgs.msg import Pose, PoseArray
 import tf
 import math
@@ -48,7 +48,7 @@ def callback(data):
             quartenion = [pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w]
             (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(quartenion)
 
-            (px, py) = rotate(pose.position.x, pose.position.y, t_yaw) 
+            (px, py) = rotate(pose.position.x, pose.position.y, t_yaw)
             pose_x = px + tx
             pose_y = py + ty
             pose_yaw = yaw + t_yaw
@@ -59,13 +59,13 @@ def callback(data):
             #fazer transofmracoa para map FIX!!!!!!
             group.append(pose_person)
 
-       
+
     #rospy.loginfo(group)
     aux_group = copy.deepcopy(group)
     groups = [aux_group]
     for gp in groups:
         for p in gp:
-            p[0] = p[0] * 100 #algorithm uses cm 
+            p[0] = p[0] * 100 #algorithm uses cm
             p[1] = p[1] * 100 # m to cm
 
     app = SpaceModeling(groups)
@@ -80,9 +80,13 @@ def callback(data):
 
 #alerar parmetro
 
-    rospy.set_param("/costmap_node/costmap/social/varx", sx)
-    rospy.set_param("/costmap_node/costmap/social/vary", sy)
-    rospy.set_param("/costmap_node/costmap/social/groupvar", gvar)
+    rospy.set_param("/move_base_flex/local_costmap/social/varx", sx)
+    rospy.set_param("/move_base_flex/local_costmap/social/vary", sy)
+    rospy.set_param("/move_base_flex/local_costmap/social/groupvar", gvar)
+
+    rospy.set_param("/move_base_flex/global_costmap/social/varx", sx)
+    rospy.set_param("/move_base_flex/global_costmap/social/vary", sy)
+    rospy.set_param("/move_base_flex/global_costmap/social/groupvar", gvar)
 
     talker(group,sx,sy,gvar)
 
@@ -95,7 +99,7 @@ def talker(group,sx,sy,gvar):
 
     #while not rospy.is_shutdown():
     p = People()
-    p.header.frame_id = "/map" 
+    p.header.frame_id = "/map"
     p.header.stamp = rospy.Time.now()
 
     if not group:
