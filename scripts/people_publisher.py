@@ -9,6 +9,9 @@ import math
 from algorithm import SpaceModeling
 import copy
 
+import actionlib
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+
 
 STRIDE = 0.65 # in m
 
@@ -60,7 +63,7 @@ def callback(data):
             group.append(pose_person)
 
 
-    #rospy.loginfo(group)
+    
     aux_group = copy.deepcopy(group)
     groups = [aux_group]
     for gp in groups:
@@ -69,7 +72,7 @@ def callback(data):
             p[1] = p[1] * 100 # m to cm
 
     app = SpaceModeling(groups)
-    pparams,gparams = app.solve()
+    pparams,gparams, approaching_poses = app.solve()
 
 
     #factor = rospy.get_param("/costmap_node/costmap/social/factor")
@@ -78,21 +81,14 @@ def callback(data):
     sy = float(pparams[0][1])/100 # cm to m
     gvar = float(gparams[0]) / 100  # cm to m
 
-#alerar parmetro
+    rospy.loginfo(approaching_poses) # in m
 
-    rospy.set_param("/move_base_flex/local_costmap/social/varx", sx)
-    rospy.set_param("/move_base_flex/local_costmap/social/vary", sy)
-    rospy.set_param("/move_base_flex/local_costmap/social/groupvar", gvar)
 
-    rospy.set_param("/move_base_flex/global_costmap/social/varx", sx)
-    rospy.set_param("/move_base_flex/global_costmap/social/vary", sy)
-    rospy.set_param("/move_base_flex/global_costmap/social/groupvar", gvar)
-
-    talker(group,sx,sy,gvar)
+    talker(group,sx,sy,gvar, approaching_poses)
 
 
 
-def talker(group,sx,sy,gvar):
+def talker(group,sx,sy,gvar, approaching_poses):
     pub = None
     pub = rospy.Publisher('/people', People, queue_size=10)
     p = None
@@ -109,32 +105,84 @@ def talker(group,sx,sy,gvar):
 
             p1 = None
             p1 = Person()
-
             p1.position.x = person[0]
             p1.position.y = person[1]
             p1.position.z = person[2]
             p1.orientation = person[2]
             p1.sx = sx
             p1.sy = sy
-
             p.people.append(p1)
-
 
         p1 = None
         p1 = Person()
         center = calc_o_space(group)
         p1.position.x = center[0]
         p1.position.y = center[1]
-
         p1.orientation = math.pi
         p1.sx = gvar
         p1.sy = gvar
-
-
         p.people.append(p1)
-
         pub.publish(p)
 
+    pub_poses = None
+    pub_poses = rospy.Publisher('/approaching_poses',PoseArray, queue_size = 10)
+    p_pose = None
+    p_pose = PoseArray()
+    p_pose.header.frame_id = "/map"
+    p_pose.header.stamp = rospy.Time.now()
+    if not group:
+        pub_poses.publish(p_pose)
+    else:
+        for approaching_pose in approaching_poses: 
+        #fazer um for para os varias poses de aproximacao
+            p1_pose = None
+            p1_pose = Pose()
+            p1_pose.position.x = approaching_pose[0] /100 #cm to m
+            p1_pose.position.y = approaching_pose [1]/100 # cm to m
+            goal_quaternion = tf.transformations.quaternion_from_euler(0, 0, approaching_pose[2])
+            p1_pose.orientation.x = goal_quaternion[0]
+            p1_pose.orientation.y = goal_quaternion[1]
+            p1_pose.orientation.z = goal_quaternion[2]
+            p1_pose.orientation.w = goal_quaternion[3]
+
+            p_pose.poses.append(p1_pose)
+
+
+        pub_poses.publish(p_pose)
+
+
+#     goal_pose = approaching_pose[0:2]
+#     goal_quaternion = tf.transformations.quaternion_from_euler(0, 0, approaching_pose[2])
+#     try:
+#         rospy.loginfo("Approaching group!")
+#         result = movebase_client(goal_pose, goal_quaternion)
+#         if result:
+#             rospy.loginfo("Goal execution done!")
+#     except rospy.ROSInterruptException:
+#         rospy.loginfo("Navigation test finished.")
+
+# def movebase_client(goal_pose, goal_quaternion):
+
+#     client = actionlib.SimpleActionClient('move_base',MoveBaseAction)
+#     client.wait_for_server()
+
+#     goal = MoveBaseGoal()
+#     goal.target_pose.header.frame_id = "map"
+#     goal.target_pose.header.stamp = rospy.Time.now()
+#     goal.target_pose.pose.position.x = goal_pose[0]
+#     goal.target_pose.pose.position.y = goal_pose[1]
+#     goal.target_pose.pose.orientation.x = goal_quaternion[0]
+#     goal.target_pose.pose.orientation.y = goal_quaternion[1]
+#     goal.target_pose.pose.orientation.z = goal_quaternion[2]
+#     goal.target_pose.pose.orientation.w = goal_quaternion[3]
+
+#     client.send_goal(goal)
+#     wait = client.wait_for_result()
+#     if not wait:
+#         rospy.logerr("Action server not available!")
+#         rospy.signal_shutdown("Action server not available!")
+#     else:
+#         return client.get_result()
 
 def calc_o_space(persons):
     """Calculates the o-space center of the group given group members pose"""

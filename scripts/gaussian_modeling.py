@@ -194,7 +194,7 @@ def estimate_gaussians(persons, group_data, idx, ellipse_param, back_param, grou
     # Personal Space as gaussian for each person in the group
 
     for idx, person in enumerate(persons):
-        
+
         if diff_params:
             sx = ellipse_param[idx][0]
             sy = ellipse_param[idx][1]
@@ -203,7 +203,7 @@ def estimate_gaussians(persons, group_data, idx, ellipse_param, back_param, grou
             sx = ellipse_param[0]
             sy = ellipse_param[1]
             sx_back = back_param
-        
+
         Z1 = None
         mu = np.array([person[0], person[1]])
         Sigma = params_conversion(
@@ -249,7 +249,7 @@ def estimate_gaussians(persons, group_data, idx, ellipse_param, back_param, grou
     surf = ax1.plot_surface(X, Y, Z, rstride=2, cstride=2, linewidth=1,
                             antialiased=False, cmap="jet")
 
-    plt.rc('text', usetex=True)
+    plt.rc('text', usetex=False)
     plt.rc('font', family='serif')
     ax1.set_xlabel(r'$x$ $[cm]$')
     ax1.set_ylabel(r'$y$ $[cm]$')
@@ -276,27 +276,13 @@ def estimate_gaussians(persons, group_data, idx, ellipse_param, back_param, grou
     for i, angle in enumerate(orientation):
         draw_arrow(center_x[i], center_y[i], angle, ax2)
 
-   # robot_pose = [0, 0, 3.14]
-    # Plots robot from top view
-   # plot_robot(robot_pose, ax2)
-    # ax2.annotate("Robot_Initial", (robot_pose[0], robot_pose[1]))
 
-    # Estimates the goal pose for the robot to approach the group
-    # goal_pose = approaching_pose(robot_pose, approaching_filter, group_pos)
-    # print("Goal Pose (cm,cm,rad) = " + str(goal_pose))
-    # plot_robot(goal_pose, ax2)
-    # ax2.annotate("Robot_Goal", (goal_pose[0], goal_pose[1]))
     ax2.set_xlabel(r'$x$ $[cm]$')
     ax2.set_ylabel(r'$y$ $[cm]$')
     ax2.set_aspect(aspect=1)
     fig.tight_layout()
-    plt.show()
-    # plt.show(block=False)
-    # print("==================================================")
-    # input("Hit Enter To Close... ")
-    # surf.remove()
-    # plt.clf()
-    # plt.close()
+    plt.show(block=False)
+
     approaching_poses = []
     for l, value in enumerate(center_x):
         approaching_poses.append(

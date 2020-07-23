@@ -433,10 +433,6 @@ class SpaceModeling:
             group_params = [self.group_data['ospace_radius']
                             [k], self.group_data['ospace_radius'][k]]
 
-            #approaching_poses, persons_costmap, map_limits = estimate_gaussians(
-             #   persons, self.group_data, k, self.pspace_param[k], self.pspace_param[k][0]/BACK_FACTOR, group_params)
+            approaching_poses, persons_costmap, map_limits = estimate_gaussians(persons, self.group_data, k, self.pspace_param[k], self.pspace_param[k][0]/BACK_FACTOR, group_params)
 
-        return self.pspace_param, group_params
-
-
-
+        return self.pspace_param, group_params, approaching_poses
