@@ -62,7 +62,6 @@ def callback(data):
             #fazer transofmracoa para map FIX!!!!!!
             group.append(pose_person)
 
-
     
     aux_group = copy.deepcopy(group)
     groups = [aux_group]
@@ -75,17 +74,13 @@ def callback(data):
     pparams,gparams, approaching_poses = app.solve()
 
 
-    #factor = rospy.get_param("/costmap_node/costmap/social/factor")
+    
     factor = 2
     sx = (float(pparams[0][0])/100)/factor # cm to m
     sy = float(pparams[0][1])/100 # cm to m
     gvar = float(gparams[0]) / 100  # cm to m
 
-    rospy.loginfo(approaching_poses) # in m
-
-
     talker(group,sx,sy,gvar, approaching_poses)
-
 
 
 def talker(group,sx,sy,gvar, approaching_poses):
@@ -93,7 +88,7 @@ def talker(group,sx,sy,gvar, approaching_poses):
     pub = rospy.Publisher('/people', People, queue_size=10)
     p = None
 
-    #while not rospy.is_shutdown():
+  
     p = People()
     p.header.frame_id = "/map"
     p.header.stamp = rospy.Time.now()
@@ -134,7 +129,7 @@ def talker(group,sx,sy,gvar, approaching_poses):
         pub_poses.publish(p_pose)
     else:
         for approaching_pose in approaching_poses: 
-        #fazer um for para os varias poses de aproximacao
+        
             p1_pose = None
             p1_pose = Pose()
             p1_pose.position.x = approaching_pose[0] /100 #cm to m
@@ -149,40 +144,6 @@ def talker(group,sx,sy,gvar, approaching_poses):
 
 
         pub_poses.publish(p_pose)
-
-
-#     goal_pose = approaching_pose[0:2]
-#     goal_quaternion = tf.transformations.quaternion_from_euler(0, 0, approaching_pose[2])
-#     try:
-#         rospy.loginfo("Approaching group!")
-#         result = movebase_client(goal_pose, goal_quaternion)
-#         if result:
-#             rospy.loginfo("Goal execution done!")
-#     except rospy.ROSInterruptException:
-#         rospy.loginfo("Navigation test finished.")
-
-# def movebase_client(goal_pose, goal_quaternion):
-
-#     client = actionlib.SimpleActionClient('move_base',MoveBaseAction)
-#     client.wait_for_server()
-
-#     goal = MoveBaseGoal()
-#     goal.target_pose.header.frame_id = "map"
-#     goal.target_pose.header.stamp = rospy.Time.now()
-#     goal.target_pose.pose.position.x = goal_pose[0]
-#     goal.target_pose.pose.position.y = goal_pose[1]
-#     goal.target_pose.pose.orientation.x = goal_quaternion[0]
-#     goal.target_pose.pose.orientation.y = goal_quaternion[1]
-#     goal.target_pose.pose.orientation.z = goal_quaternion[2]
-#     goal.target_pose.pose.orientation.w = goal_quaternion[3]
-
-#     client.send_goal(goal)
-#     wait = client.wait_for_result()
-#     if not wait:
-#         rospy.logerr("Action server not available!")
-#         rospy.signal_shutdown("Action server not available!")
-#     else:
-#         return client.get_result()
 
 def calc_o_space(persons):
     """Calculates the o-space center of the group given group members pose"""

@@ -45,16 +45,11 @@ namespace adaptive_social_layers
         for(p_it = transformed_people_.begin(); p_it != transformed_people_.end(); ++p_it){
             group_msgs::Person person = *p_it;
 
-            // double mag = sqrt(pow(person.velocity.x,2) + pow(person.velocity.y, 2));
-            // double factor = 1.0 + mag * factor_;
             double point;
             if (next(p_it) == transformed_people_.end())
                 point = std::max(person.sx,person.sy);
             else
                 point = std::max(person.sx,person.sy)*factor_;
-
-            //double point = get_radius(cutoff_, amplitude_, var );
-
 
             *min_x = std::min(*min_x, person.position.x - point + 5 );
             *min_y = std::min(*min_y, person.position.y - point + 5 );
@@ -79,9 +74,6 @@ namespace adaptive_social_layers
         
         for(p_it = transformed_people_.begin(); p_it != transformed_people_.end(); ++p_it){
             group_msgs::Person person = *p_it;
-            // double angle = atan2(person.velocity.y, person.velocity.x);
-            // double mag = sqrt(pow(person.velocity.x,2) + pow(person.velocity.y, 2));
-            // double factor = 1.0 + mag * factor_;
             double angle = person.orientation;
 
             double var;
@@ -99,11 +91,6 @@ namespace adaptive_social_layers
                 point = std::max(person.sx,person.sy)*factor_ + 5;
             }
 
-
-            //double base = get_radius(cutoff_, amplitude_, var);
-            //double point = get_radius(cutoff_, amplitude_, varp);
-
-;
             unsigned int width = std::max(1, int( (base + point) / res )),
                           height = std::max(1, int( (base + point) / res ));
 
@@ -172,16 +159,10 @@ namespace adaptive_social_layers
  
                     }
                     
-
                     if(a < cutoff_)
                         continue;
                     unsigned char cvalue = (unsigned char) a;
                     costmap->setCost(i+dx, j+dy, std::max(cvalue, old_cost));
-
-                    
-                        
-
-                  
 
               }
             }
