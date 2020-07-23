@@ -47,18 +47,19 @@ namespace adaptive_social_layers
 
             // double mag = sqrt(pow(person.velocity.x,2) + pow(person.velocity.y, 2));
             // double factor = 1.0 + mag * factor_;
-            double var;
+            double point;
             if (next(p_it) == transformed_people_.end())
-                var = groupvar_ ;
+                point = std::max(person.sx,person.sy);
             else
-                var = varx_ * factor_;
+                point = std::max(person.sx,person.sy)*factor_;
 
-            double point = get_radius(cutoff_, amplitude_, var );
+            //double point = get_radius(cutoff_, amplitude_, var );
 
-            *min_x = std::min(*min_x, person.position.x - point - 5);
-            *min_y = std::min(*min_y, person.position.y - point - 5);
-            *max_x = std::max(*max_x, person.position.x + point + 5);
-            *max_y = std::max(*max_y, person.position.y + point + 5);
+
+            *min_x = std::min(*min_x, person.position.x - point + 5 );
+            *min_y = std::min(*min_y, person.position.y - point + 5 );
+            *max_x = std::max(*max_x, person.position.x + point + 5 );
+            *max_y = std::max(*max_y, person.position.y + point + 5 );
 
         }
     }
@@ -81,25 +82,28 @@ namespace adaptive_social_layers
             // double angle = atan2(person.velocity.y, person.velocity.x);
             // double mag = sqrt(pow(person.velocity.x,2) + pow(person.velocity.y, 2));
             // double factor = 1.0 + mag * factor_;
-            double angle = person.position.z;
+            double angle = person.orientation;
 
             double var;
             double varp;
+            double base;
+            double point ;
             if (next(p_it) == transformed_people_.end()){
-                var = groupvar_;
-                varp = groupvar_ ;
+
+                base = std::max(person.sx,person.sy) + 5  ;
+                point = std::max(person.sx,person.sy) + 5;
             }
 
             else{
-                var = varx_;
-                varp = varx_*factor_;
+                base = std::max(person.sx,person.sy) + 5;
+                point = std::max(person.sx,person.sy)*factor_ + 5;
             }
 
 
+            //double base = get_radius(cutoff_, amplitude_, var);
+            //double point = get_radius(cutoff_, amplitude_, varp);
 
-            double base = get_radius(cutoff_, amplitude_, var);
-            double point = get_radius(cutoff_, amplitude_, varp);
-
+;
             unsigned int width = std::max(1, int( (base + point) / res )),
                           height = std::max(1, int( (base + point) / res ));
 
@@ -154,22 +158,20 @@ namespace adaptive_social_layers
                     double diff = angles::shortest_angular_distance(angle, ma);
                     double a;
     
-
+                    
                     if (next(p_it) != transformed_people_.end()){
                         if(fabs(diff)<M_PI/2)
-                            a = gaussian(x,y,cx,cy,amplitude_,varx_*factor_,vary_,person.position.z);
+                            a = gaussian(x,y,cx,cy,amplitude_,person.sx*factor_,person.sy,person.orientation);
                         else
-                            a = gaussian(x,y,cx,cy,amplitude_,varx_,       vary_,person.position.z);
+                            a = gaussian(x,y,cx,cy,amplitude_,person.sx,       person.sy,person.orientation);
                     }
 
                     else{
-                        if(fabs(diff)<M_PI/2)
-                            a = gaussian(x,y,cx,cy,amplitude_,groupvar_,groupvar_,person.position.z);
-                        else
-                            a = gaussian(x,y,cx,cy,amplitude_,groupvar_,       groupvar_,person.position.z);
+                        
+                        a = gaussian(x,y,cx,cy,amplitude_,person.sx,person.sy,person.orientation);
+ 
                     }
                     
-
 
                     if(a < cutoff_)
                         continue;
@@ -191,10 +193,7 @@ namespace adaptive_social_layers
     void AdaptiveLayer::configure(AdaptiveLayerConfig &config, uint32_t level) {
         cutoff_ = config.cutoff;
         amplitude_ = config.amplitude;
-        varx_ = config.varx;
-        vary_ = config.vary;
         factor_ = config.factor;
-        groupvar_ = config.groupvar;
         people_keep_time_ = ros::Duration(config.keep_time);
         enabled_ = config.enabled;
     }

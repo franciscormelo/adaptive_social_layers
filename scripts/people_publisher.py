@@ -113,10 +113,10 @@ def talker(group,sx,sy,gvar):
             p1.position.x = person[0]
             p1.position.y = person[1]
             p1.position.z = person[2]
-            #p1.orientation = person[2]
-            #p1.velocity.x = sx
-            #p1.velocity.y = sy
-            #Usar velocidades temporariamente para definir sx e sy
+            p1.orientation = person[2]
+            p1.sx = sx
+            p1.sy = sy
+
             p.people.append(p1)
 
 
@@ -125,10 +125,11 @@ def talker(group,sx,sy,gvar):
         center = calc_o_space(group)
         p1.position.x = center[0]
         p1.position.y = center[1]
-        p1.position.z = math.pi
-        #p1.velocity.x = gvar
-        #p1.velocity.y = gvar
-        #Usar velocidades temporariamente para definir gvar
+
+        p1.orientation = math.pi
+        p1.sx = gvar
+        p1.sy = gvar
+
 
         p.people.append(p1)
 

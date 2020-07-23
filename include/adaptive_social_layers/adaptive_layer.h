@@ -23,7 +23,7 @@ namespace adaptive_social_layers
 
     protected:
       void configure(AdaptiveLayerConfig &config, uint32_t level);
-      double cutoff_, amplitude_, varx_,vary_, groupvar_, factor_;
+      double cutoff_, amplitude_, factor_;
       dynamic_reconfigure::Server<AdaptiveLayerConfig>* server_;
       dynamic_reconfigure::Server<AdaptiveLayerConfig>::CallbackType f_;
   };

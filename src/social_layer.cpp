@@ -53,6 +53,10 @@ namespace adaptive_social_layers
               tpt.velocity.y = opt.point.y - tpt.position.y;
               tpt.velocity.z = opt.point.z - tpt.position.z;
 
+              tpt.orientation = person.orientation;
+              tpt.sx = person.sx;
+              tpt.sy = person.sy;
+
               transformed_people_.push_back(tpt);
 
             }
