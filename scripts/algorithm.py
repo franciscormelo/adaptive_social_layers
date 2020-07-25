@@ -28,8 +28,10 @@ HUMAN_Y = 45
 HUMAN_X = 20
 
 # Personal Space Maximum 45 - 120 cm - Initial Parameters
-PSPACEX = 80
-PSPACEY = 60
+# PSPACEX = 80
+# PSPACEY = 60
+PSPACEX = 120
+PSPACEY = 90
 
 STRIDE = 65
 

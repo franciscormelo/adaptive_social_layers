@@ -281,7 +281,7 @@ def estimate_gaussians(persons, group_data, idx, ellipse_param, back_param, grou
     ax2.set_ylabel(r'$y$ $[cm]$')
     ax2.set_aspect(aspect=1)
     fig.tight_layout()
-    plt.show(block=False)
+    plt.show()
 
     approaching_poses = []
     for l, value in enumerate(center_x):

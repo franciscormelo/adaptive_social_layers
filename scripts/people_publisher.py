@@ -15,6 +15,9 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 
 STRIDE = 0.65 # in m
 
+# Relation between personal frontal space and back space
+BACK_FACTOR = 1.3
+
 def rotate(px, py, angle):
     """
     Rotate a point counterclockwise by a given angle around a given origin.
@@ -75,8 +78,8 @@ def callback(data):
 
 
     
-    factor = 2
-    sx = (float(pparams[0][0])/100)/factor # cm to m
+
+    sx = (float(pparams[0][0])/100)/BACK_FACTOR # cm to m
     sy = float(pparams[0][1])/100 # cm to m
     gvar = float(gparams[0]) / 100  # cm to m
 
