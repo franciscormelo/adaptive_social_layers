@@ -9,7 +9,7 @@ from algorithm import SpaceModeling
 import copy
 
 import actionlib
-from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+
 
 
 STRIDE = 0.65 # in m

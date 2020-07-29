@@ -271,10 +271,10 @@ def calc_o_space(persons):
     """Calculates the o-space center of the group given group members pose"""
     c_x = 0
     c_y = 0
-    
+
     # Group size
     g_size = len(persons)
-    
+
     for person in persons:
         c_x += person[0] + np.cos(person[2]) * STRIDE
         c_y += person[1] + np.sin(person[2]) * STRIDE
@@ -437,5 +437,5 @@ class SpaceModeling:
 
             #approaching_poses, persons_costmap, map_limits = estimate_gaussians(persons, self.group_data, k, self.pspace_param[k], self.pspace_param[k][0]/BACK_FACTOR, group_params)
 
-        #return self.pspace_param, group_params, approaching_poses
+        # return self.pspace_param, group_params, approaching_poses
         return self.pspace_param, group_params
