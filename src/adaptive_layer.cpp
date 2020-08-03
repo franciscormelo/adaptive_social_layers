@@ -71,7 +71,7 @@ namespace adaptive_social_layers
         std::list<group_msgs::Person>::iterator p_it;
         costmap_2d::Costmap2D* costmap = layered_costmap_->getCostmap();
         double res = costmap->getResolution();
-        
+        int size = transformed_people_.size();
         for(p_it = transformed_people_.begin(); p_it != transformed_people_.end(); ++p_it){
             group_msgs::Person person = *p_it;
             double angle = person.orientation;
@@ -154,8 +154,8 @@ namespace adaptive_social_layers
                     }
 
                     else{
-                        
-                        a = gaussian(x,y,cx,cy,amplitude_,person.sx,person.sy,person.orientation);
+                        if(size > 2 ) // Only represent group space for groups
+                            a = gaussian(x,y,cx,cy,amplitude_,person.sx,person.sy,person.orientation);
  
                     }
                     
