@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
-from group_msgs.msg import People, Person
+from group_msgs.msg import People, Person, Groups
 from geometry_msgs.msg import Pose, PoseArray
 import tf
 import math
@@ -46,7 +46,6 @@ class PeoplePublisher():
 
         self.data = None
         self.pub = rospy.Publisher('/people', People, queue_size=1)
-        
 
     def callback(self,data):
         
@@ -73,55 +72,65 @@ class PeoplePublisher():
 
 
                 group.append(pose_person)
-       
+
+        ########################################################################
+
+
+        # Fazer aqui GCFF calculo dos grupos atraves das poses recebidas gazebo ou people detector and tracker 
+       #########################################################################
         if group:
             aux_group = copy.deepcopy(group)
-            groups = [aux_group]
-            for gp in groups:
+            groupscm = [aux_group]
+            groups = [group]
+            for gp in groupscm:
                 for p in gp:
                     p[0] = p[0] * 100 #algorithm uses cm
                     p[1] = p[1] * 100 # m to cm
 
             
 
-            app = SpaceModeling(groups)
+            app = SpaceModeling(groupscm)
             pparams,gparams= app.solve()
 
-
-            
-
-            sx = (float(pparams[0][0])/100)/BACK_FACTOR # cm to m
-            sy = float(pparams[0][1])/100 # cm to m
-            gvar = float(gparams[0]) / 100  # cm to m
-
-            
             p = People()
             p.header.frame_id = "/base_footprint"
             p.header.stamp = rospy.Time.now()
-
-  
-            for person in group:
-
-                p1 = Person()
-                p1.position.x = person[0]
-                p1.position.y = person[1]
-                p1.position.z = person[2]
-                p1.orientation = person[2]
-                p1.sx = sx
-                p1.sy = sy
-                p.people.append(p1)
-
             
-            p1 = Person()
-            center = calc_o_space(group)
-            p1.position.x = center[0]
-            p1.position.y = center[1]
-            p1.orientation = math.pi
-            p1.sx = gvar
-            p1.sy = gvar
-            p.people.append(p1)
-            self.pub.publish(p)
+            for idx,group in enumerate(groups):
 
+                sx = (float(pparams[idx][0])/100)/BACK_FACTOR # cm to m
+                sy = float(pparams[idx][1])/100 # cm to m
+                gvarx = float(gparams[idx][0]) / 100  # cm to m
+                gvary = float(gparams[idx][1]) / 100  # cm to m
+                
+
+    
+                for person in group:
+
+                    p1 = Person()
+                    p1.position.x = person[0]
+                    p1.position.y = person[1]
+                    p1.orientation = person[2]
+                    p1.sx = sx
+                    p1.sy = sy
+                    p1.ospace = False
+    
+                    p.people.append(p1)
+
+                
+                # Only represent o space for  +2 individuals
+                if len(group) > 1:
+                    p1 = Person()
+                    center = calc_o_space(group)
+                    p1.position.x = center[0]
+                    p1.position.y = center[1]
+                    p1.orientation = math.pi
+                    p1.sx = gvarx
+                    p1.sy = gvary
+                    p1.ospace = True
+                    p.people.append(p1)
+                
+            self.pub.publish(p)
 
  
 

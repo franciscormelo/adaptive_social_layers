@@ -46,7 +46,7 @@ namespace adaptive_social_layers
             group_msgs::Person person = *p_it;
 
             double point;
-            if (next(p_it) == transformed_people_.end())
+            if (!person.ospace) 
                 point = std::max(person.sx,person.sy);
             else
                 point = std::max(person.sx,person.sy)*factor_;
@@ -80,7 +80,7 @@ namespace adaptive_social_layers
             double varp;
             double base;
             double point ;
-            if (next(p_it) == transformed_people_.end()){
+            if (!person.ospace){ 
 
                 base = std::max(person.sx,person.sy) + 5  ;
                 point = std::max(person.sx,person.sy) + 5;
@@ -146,7 +146,7 @@ namespace adaptive_social_layers
                     double a;
     
                     
-                    if (next(p_it) != transformed_people_.end()){
+                    if (!person.ospace){ 
                         if(fabs(diff)<M_PI/2)
                             a = gaussian(x,y,cx,cy,amplitude_,person.sx*factor_,person.sy,person.orientation);
                         else
@@ -154,9 +154,7 @@ namespace adaptive_social_layers
                     }
 
                     else{
-                        if(size > 2 ) // Only represent group space for groups
-                            a = gaussian(x,y,cx,cy,amplitude_,person.sx,person.sy,person.orientation);
- 
+                        a = gaussian(x,y,cx,cy,amplitude_,person.sx,person.sy,person.orientation);
                     }
                     
                     if(a < cutoff_)
