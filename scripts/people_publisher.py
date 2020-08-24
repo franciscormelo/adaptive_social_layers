@@ -62,7 +62,6 @@ class PeoplePublisher():
         group = []
 
         persons = []
-        persons_idx = []
 
         if not data.poses:
             groups = []
@@ -77,11 +76,12 @@ class PeoplePublisher():
                 pose_person = [pose.position.x * 100, pose.position.y * 100,yaw]
                 pose_persons_idx = [ct + 1 ,pose.position.x * 100, pose.position.y * 100,yaw,]
                 persons.append(pose_person)
-                persons_idx.append(pose_persons_idx)
+
         # Run GCFF gcff.m Matlab function      
         mdl = 8000
-        stride = 50
-        groups = eng.gcff(mdl,stride, matlab.double(persons))
+        stride = 65
+        if persons:
+            groups = eng.gcff(mdl,stride, matlab.double(persons))
   
         if groups:
             app = SpaceModeling(groups)
