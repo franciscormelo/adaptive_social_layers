@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-
+import matlab.engine
+eng = matlab.engine.start_matlab()
+eng.cd(r'/home/flash/catkin_ws/src/adaptive_social_layers/scripts', nargout=0)
 import rospy
 from group_msgs.msg import People, Person, Groups
 from geometry_msgs.msg import Pose, PoseArray
@@ -56,40 +58,33 @@ class PeoplePublisher():
     def publish(self):
         
         data = self.data
+        groups = []
         group = []
+
+        persons = []
+        persons_idx = []
+
         if not data.poses:
-            group = []
+            groups = []
         else:
-            for pose in data.poses:
+            for ct, pose in enumerate(data.poses):
 
                 rospy.loginfo("Person Detected")
                 
                 quartenion = [pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w]
                 (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(quartenion)
 
-                pose_person = [pose.position.x, pose.position.y,yaw]
-                
-
-
-                group.append(pose_person)
-
-        ########################################################################
-
-
-        # Fazer aqui GCFF calculo dos grupos atraves das poses recebidas gazebo ou people detector and tracker 
-       #########################################################################
-        if group:
-            aux_group = copy.deepcopy(group)
-            groupscm = [aux_group]
-            groups = [group]
-            for gp in groupscm:
-                for p in gp:
-                    p[0] = p[0] * 100 #algorithm uses cm
-                    p[1] = p[1] * 100 # m to cm
-
-            
-
-            app = SpaceModeling(groupscm)
+                pose_person = [pose.position.x * 100, pose.position.y * 100,yaw]
+                pose_persons_idx = [ct + 1 ,pose.position.x * 100, pose.position.y * 100,yaw,]
+                persons.append(pose_person)
+                persons_idx.append(pose_persons_idx)
+        # Run GCFF gcff.m Matlab function      
+        mdl = 8000
+        stride = 50
+        groups = eng.gcff(mdl,stride, matlab.double(persons))
+  
+        if groups:
+            app = SpaceModeling(groups)
             pparams,gparams= app.solve()
 
             p = People()
@@ -108,8 +103,8 @@ class PeoplePublisher():
                 for person in group:
 
                     p1 = Person()
-                    p1.position.x = person[0]
-                    p1.position.y = person[1]
+                    p1.position.x = person[0] / 100 # cm to m
+                    p1.position.y = person[1] / 100 # cm to m
                     p1.orientation = person[2]
                     p1.sx = sx
                     p1.sy = sy
@@ -122,13 +117,15 @@ class PeoplePublisher():
                 if len(group) > 1:
                     p1 = Person()
                     center = calc_o_space(group)
-                    p1.position.x = center[0]
-                    p1.position.y = center[1]
+                    p1.position.x = center[0] / 100 # cm to m
+                    p1.position.y = center[1] / 100 # cm to m
                     p1.orientation = math.pi
                     p1.sx = gvarx
                     p1.sy = gvary
                     p1.ospace = True
                     p.people.append(p1)
+
+
                 
             self.pub.publish(p)
 
@@ -152,3 +149,4 @@ if __name__ == '__main__':
  
     people_publisher = PeoplePublisher()
     people_publisher.run_behavior()
+    eng.quit()
