@@ -51,10 +51,10 @@ namespace adaptive_social_layers
             else
                 point = std::max(person.sx,person.sy)*factor_;
 
-            *min_x = std::min(*min_x, person.position.x - point + 5 );
-            *min_y = std::min(*min_y, person.position.y - point + 5 );
-            *max_x = std::max(*max_x, person.position.x + point + 5 );
-            *max_y = std::max(*max_y, person.position.y + point + 5 );
+            *min_x = std::min(*min_x, person.position.x - point + 0.5 );
+            *min_y = std::min(*min_y, person.position.y - point + 0.5 );
+            *max_x = std::max(*max_x, person.position.x + point + 0.5 );
+            *max_y = std::max(*max_y, person.position.y + point + 0.5 );
 
         }
     }
@@ -72,6 +72,15 @@ namespace adaptive_social_layers
         costmap_2d::Costmap2D* costmap = layered_costmap_->getCostmap();
         double res = costmap->getResolution();
         int size = transformed_people_.size();
+
+        // Clears costmap in the zone of the group. Obstacle layer marks people as an obstacle.
+        // We need to clear this information.
+
+
+
+
+
+
         for(p_it = transformed_people_.begin(); p_it != transformed_people_.end(); ++p_it){
             group_msgs::Person person = *p_it;
             double angle = person.orientation;
@@ -82,13 +91,13 @@ namespace adaptive_social_layers
             double point ;
             if (!person.ospace){ 
 
-                base = std::max(person.sx,person.sy) + 5  ;
-                point = std::max(person.sx,person.sy) + 5;
+                base = std::max(person.sx,person.sy) + 0.5  ;
+                point = std::max(person.sx,person.sy) + 0.5;
             }
 
             else{
-                base = std::max(person.sx,person.sy) + 5;
-                point = std::max(person.sx,person.sy)*factor_ + 5;
+                base = std::max(person.sx,person.sy) + 0.5;
+                point = std::max(person.sx,person.sy)*factor_ + 0.5;
             }
 
             unsigned int width = std::max(1, int( (base + point) / res )),
@@ -156,6 +165,13 @@ namespace adaptive_social_layers
                     else{
                         a = gaussian(x,y,cx,cy,amplitude_,person.sx,person.sy,person.orientation);
                     }
+
+                    // If cost for inflation cost meter a free espaco pessoal nao tem inflation
+
+                    if (old_cost < cutoff_)
+                        costmap->setCost(i+dx, j+dy, 0);
+
+                    /////////////////////////
                     
                     if(a < cutoff_)
                         continue;

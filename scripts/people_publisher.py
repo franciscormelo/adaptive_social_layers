@@ -1,7 +1,9 @@
 #!/usr/bin/env python
+
 import matlab.engine
 eng = matlab.engine.start_matlab()
 eng.cd(r'/home/flash/catkin_ws/src/adaptive_social_layers/scripts', nargout=0)
+
 import rospy
 from group_msgs.msg import People, Person, Groups
 from geometry_msgs.msg import Pose, PoseArray
@@ -40,7 +42,7 @@ def calc_o_space(persons):
 
 class PeoplePublisher():
     def __init__(self):
-        rospy.init_node('talker', anonymous=True)
+        rospy.init_node('PeoplePublisher', anonymous=True)
         
         rospy.Subscriber("/faces",PoseArray,self.callback,queue_size=1)
         self.loop_rate = rospy.Rate(rospy.get_param('~loop_rate', 10.0))
@@ -66,7 +68,7 @@ class PeoplePublisher():
         if not data.poses:
             groups = []
         else:
-            for ct, pose in enumerate(data.poses):
+            for pose in data.poses:
 
                 rospy.loginfo("Person Detected")
                 
@@ -74,7 +76,6 @@ class PeoplePublisher():
                 (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(quartenion)
 
                 pose_person = [pose.position.x * 100, pose.position.y * 100,yaw]
-                pose_persons_idx = [ct + 1 ,pose.position.x * 100, pose.position.y * 100,yaw,]
                 persons.append(pose_person)
 
         # Run GCFF gcff.m Matlab function      
@@ -145,8 +146,6 @@ class PeoplePublisher():
                 self.publish()
 
 if __name__ == '__main__':
-
- 
     people_publisher = PeoplePublisher()
     people_publisher.run_behavior()
     eng.quit()

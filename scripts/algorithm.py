@@ -17,7 +17,7 @@ import sys
 from shapely.geometry.point import Point
 from shapely import affinity
 from approaching_pose import approachingfiltering_ellipses
-from gaussian_modeling import estimate_gaussians
+
 
 
 SHOW_PLOT = True
@@ -437,9 +437,5 @@ class SpaceModeling:
                             [k], self.group_data['ospace_radius'][k]]
 
             groups_params.append(group_params)
-
-            #approaching_poses, persons_costmap, map_limits = estimate_gaussians(persons, self.group_data, k, self.pspace_param[k], self.pspace_param[k][0]/BACK_FACTOR, group_params)
-
-        # return self.pspace_param, group_params, approaching_poses
 
         return self.pspace_param, groups_params
