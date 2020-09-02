@@ -55,15 +55,13 @@ namespace adaptive_social_layers
         for(p_it = transformed_people_.begin(); p_it != transformed_people_.end(); ++p_it){
             group_msgs::Person person = *p_it;
             double angle = person.orientation;
-
-            double var;
-            double varp;
             double base;
             double point ;
             
 
             base = clcdis_;
             point = clcdis_;
+            
             unsigned int width = std::max(1, int( (base + point) / res )),
                           height = std::max(1, int( (base + point) / res ));
 
