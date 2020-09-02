@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 generate_dynamic_reconfigure_options(
   cfg/AdaptiveLayer.cfg
+  cfg/CleanPeopleLayer.cfg
 )
 
 catkin_package(
@@ -31,6 +32,7 @@ include_directories(
 add_library(social_layers 
             src/social_layer.cpp
             src/adaptive_layer.cpp 
+	    src/clean_people_layer.cpp
 )
 add_dependencies(social_layers ${${PROJECT_NAME}_EXPORTED_TARGETS})
 target_link_libraries(

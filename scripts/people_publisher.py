@@ -127,10 +127,8 @@ class PeoplePublisher():
                     p.people.append(p1)
 
 
-                
             self.pub.publish(p)
 
- 
 
         else:
             p = People()

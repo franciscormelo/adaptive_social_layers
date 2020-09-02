@@ -2,4 +2,7 @@
   <class type="adaptive_social_layers::AdaptiveLayer" base_class_type="costmap_2d::Layer">
     <description>Uses people information to change the costmap</description>
   </class>
+  <class type="adaptive_social_layers::CleanPeopleLayer" base_class_type="costmap_2d::Layer">
+    <description>Cleans People from obstacles</description>
+  </class>
 </library>

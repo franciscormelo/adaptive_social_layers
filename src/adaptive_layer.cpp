@@ -73,13 +73,6 @@ namespace adaptive_social_layers
         double res = costmap->getResolution();
         int size = transformed_people_.size();
 
-        // Clears costmap in the zone of the group. Obstacle layer marks people as an obstacle.
-        // We need to clear this information.
-
-
-
-
-
 
         for(p_it = transformed_people_.begin(); p_it != transformed_people_.end(); ++p_it){
             group_msgs::Person person = *p_it;
@@ -166,12 +159,6 @@ namespace adaptive_social_layers
                         a = gaussian(x,y,cx,cy,amplitude_,person.sx,person.sy,person.orientation);
                     }
 
-                    // If cost for inflation cost meter a free espaco pessoal nao tem inflation
-
-                    if (old_cost < cutoff_)
-                        costmap->setCost(i+dx, j+dy, 0);
-
-                    /////////////////////////
                     
                     if(a < cutoff_)
                         continue;
