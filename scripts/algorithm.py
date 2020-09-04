@@ -15,8 +15,9 @@ import math
 from ellipse import plot_ellipse
 import sys
 from shapely.geometry.point import Point
+from shapely.geometry.polygon import Polygon
 from shapely import affinity
-from approaching_pose import approachingfiltering_ellipses
+
 
 
 
@@ -159,6 +160,20 @@ def minimum_personalspace(sx, sy):
         sx = HUMAN_X / 2
 
     return sx, sy
+
+
+def approachingfiltering_ellipses(personal_space, approaching_filter, idx):
+    """Filters the approaching area."""
+    # Approaching Area filtering - remove points tha are inside the personal space of a person
+    if idx == 1:
+        approaching_filter = [(x, y) for x, y in zip(
+            approaching_filter[0], approaching_filter[1]) if not personal_space.contains_point([x, y])]
+    else:
+        cx = [j[0] for j in approaching_filter]
+        cy = [k[1] for k in approaching_filter]
+        approaching_filter = [(x, y) for x, y in zip(
+            cx, cy) if not personal_space.contains_point([x, y])]
+    return approaching_filter
 
 
 def parameters_computation(person1, person2, sigmax=PSPACEX, sigmay=PSPACEY):

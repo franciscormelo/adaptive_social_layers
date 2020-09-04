@@ -41,7 +41,11 @@ def calc_o_space(persons):
     return center
 
 class PeoplePublisher():
+    """
+    """
     def __init__(self):
+        """
+        """
         rospy.init_node('PeoplePublisher', anonymous=True)
         
         rospy.Subscriber("/faces",PoseArray,self.callback,queue_size=1)
@@ -52,12 +56,16 @@ class PeoplePublisher():
         self.pub = rospy.Publisher('/people', People, queue_size=1)
 
     def callback(self,data):
+        """
+        """
         
         self.data = data
         self.pose_received = True
         
 
     def publish(self):
+        """
+        """
         
         data = self.data
         groups = []
