@@ -54,6 +54,7 @@ class PeoplePublisher():
 
         self.data = None
         self.pub = rospy.Publisher('/people', People, queue_size=1)
+        self.pubg = rospy.Publisher('/groups', Groups, queue_size=1)
 
     def callback(self,data):
         """
@@ -99,8 +100,15 @@ class PeoplePublisher():
             p = People()
             p.header.frame_id = "/base_footprint"
             p.header.stamp = rospy.Time.now()
+
+            g = Groups()
+            g.header.frame_id = "/base_footprint"
+            g.header.stamp = rospy.Time.now()
             
             for idx,group in enumerate(groups):
+                aux_p = People()
+                aux_p.header.frame_id = "/base_footprint"
+                aux_p.header.stamp = rospy.Time.now()
 
                 sx = (float(pparams[idx][0])/100)/BACK_FACTOR # cm to m
                 sy = float(pparams[idx][1])/100 # cm to m
@@ -118,9 +126,10 @@ class PeoplePublisher():
                     p1.sx = sx
                     p1.sy = sy
                     p1.ospace = False
-    
                     p.people.append(p1)
 
+                    
+                    aux_p.people.append(p1)
                 
                 # Only represent o space for  +2 individuals
                 if len(group) > 1:
@@ -134,15 +143,24 @@ class PeoplePublisher():
                     p1.ospace = True
                     p.people.append(p1)
 
+                    aux_p.people.append(p1)
+
+                g.groups.append(aux_p)
 
             self.pub.publish(p)
-
+            
+            self.pubg.publish(g)
 
         else:
             p = People()
             p.header.frame_id = "/base_footprint"
             p.header.stamp = rospy.Time.now()
             self.pub.publish(p)
+
+            g = Groups()
+            g.header.frame_id = "/base_footprint"
+            g.header.stamp = rospy.Time.now()
+            self.pubg.append(g)
 
     def run_behavior(self):
         while not rospy.is_shutdown():

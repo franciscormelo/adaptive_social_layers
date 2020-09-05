@@ -1,7 +1,11 @@
 % -----------------------------------------
 % Graph-Cuts for F-Formation (GCFF) for a single frame for python and ros
 % integration
-
+% -----------------------------------------
+% Graph-Cuts for F-Formation (GCFF)
+% 2015 - University of Verona
+% Written by Francesco Setti
+% -----------------------------------------
 
 function groups = gcff(mdl, stride, persons)
     addpath ('graphopt')

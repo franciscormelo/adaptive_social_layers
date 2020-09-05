@@ -1,3 +1,8 @@
+% -----------------------------------------
+% Graph-Cuts for F-Formation (GCFF)
+% 2015 - University of Verona
+% Written by Francesco Setti
+% -----------------------------------------
 function seg = gc( f, stride, MDL_in)
 % Runs graph-cuts
 
