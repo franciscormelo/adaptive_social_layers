@@ -16,7 +16,7 @@ import actionlib
 
 
 
-STRIDE = 0.65 # in m
+STRIDE = 65 # in cm
 
 # Relation between personal frontal space and back space
 BACK_FACTOR = 1.3
@@ -29,8 +29,6 @@ def calc_o_space(persons):
 # Group size
     g_size = len(persons)
     
-
-
     for person in persons:
         c_x += person[0] + math.cos(person[2]) * STRIDE
         c_y += person[1] + math.sin(person[2]) * STRIDE
