@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #! /usr/bin/env python
 '''
-    File name: space_modeling.py
+    File name: algorithm.py
     Author: Francisco Melo
     Mail: francisco.raposo.melo@tecnico.ulisboa.pt
     Date created: X/XX/XXXX

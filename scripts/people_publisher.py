@@ -17,6 +17,7 @@ import actionlib
 
 
 STRIDE = 65 # in cm
+MDL = 8000
 
 # Relation between personal frontal space and back space
 BACK_FACTOR = 1.3
@@ -86,13 +87,11 @@ class PeoplePublisher():
                 persons.append(pose_person)
 
         # Run GCFF gcff.m Matlab function      
-        mdl = 8000
-        stride = 65
         if persons:
-            groups = eng.gcff(mdl,stride, matlab.double(persons))
+            groups = eng.gcff(MDL,STRIDE, matlab.double(persons))
   
         if groups:
-            app = SpaceModeling(groups)
+            app = SpaceModeling(groups) # Space modeling works in cm
             pparams,gparams= app.solve()
 
             p = People()
