@@ -165,6 +165,10 @@ namespace adaptive_social_layers
                     unsigned char cvalue = (unsigned char) a;
                     costmap->setCost(i+dx, j+dy, std::max(cvalue, old_cost));
 
+                    // Mark person area as lethal
+                    //costmap->setCost(i+dx, j+dy, 254);
+   
+
               }
             }
 
