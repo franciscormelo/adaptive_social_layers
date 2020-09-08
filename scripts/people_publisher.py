@@ -157,7 +157,7 @@ class PeoplePublisher():
             g = Groups()
             g.header.frame_id = "/base_footprint"
             g.header.stamp = rospy.Time.now()
-            self.pubg.append(g)
+            self.pubg.publish(g)
 
     def run_behavior(self):
         while not rospy.is_shutdown():
