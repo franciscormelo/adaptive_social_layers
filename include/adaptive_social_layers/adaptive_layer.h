@@ -9,6 +9,11 @@
 
 double gaussian(double x, double y, double x0, double y0, double A, double varx, double vary, double skew);
 double get_radius(double cutoff, double A, double var);
+double distance(double x1, double y1, double x2, double y2);
+
+//Human Body Dimensions top view in m
+#define HUMAN_Y  0.45
+#define HUMAN_X  0.20
 
 namespace adaptive_social_layers
 {

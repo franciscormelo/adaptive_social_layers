@@ -26,6 +26,13 @@ double get_radius(double cutoff, double A, double var){
     return sqrt(-2*var * log(cutoff/A) );
 }
 
+double distance(double x1, double y1, double x2, double y2){
+    double square_difference_x = (x2 - x1) * (x2 - x1);
+    double square_difference_y = (y2 - y1) * (y2 - y1);
+    double sum = square_difference_x + square_difference_y;
+    double value = sqrt(sum);
+    return value;
+}
 
 namespace adaptive_social_layers
 {
@@ -153,6 +160,9 @@ namespace adaptive_social_layers
                             a = gaussian(x,y,cx,cy,amplitude_,person.sx*factor_,person.sy,person.orientation);
                         else
                             a = gaussian(x,y,cx,cy,amplitude_,person.sx,       person.sy,person.orientation);
+
+                        if (distance(x,y,cx,cy) <= HUMAN_Y/2) //Mark person as lethal 
+                            costmap->setCost(i+dx, j+dy, 254);
                     }
 
                     else{
@@ -165,10 +175,7 @@ namespace adaptive_social_layers
                     unsigned char cvalue = (unsigned char) a;
                     costmap->setCost(i+dx, j+dy, std::max(cvalue, old_cost));
 
-                    // Mark person area as lethal
-                    //costmap->setCost(i+dx, j+dy, 254);
-   
-
+                   
               }
             }
 
