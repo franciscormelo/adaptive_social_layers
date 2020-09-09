@@ -34,6 +34,8 @@ double distance(double x1, double y1, double x2, double y2){
     return value;
 }
 
+
+
 namespace adaptive_social_layers
 {
     void AdaptiveLayer::onInitialize()
@@ -153,29 +155,34 @@ namespace adaptive_social_layers
                     double ma = atan2(y-cy,x-cx);
                     double diff = angles::shortest_angular_distance(angle, ma);
                     double a;
-    
-                    
-                    if (!person.ospace){ 
-                        if(fabs(diff)<M_PI/2)
-                            a = gaussian(x,y,cx,cy,amplitude_,person.sx*factor_,person.sy,person.orientation);
-                        else
-                            a = gaussian(x,y,cx,cy,amplitude_,person.sx,       person.sy,person.orientation);
 
-                        if (distance(x,y,cx,cy) <= HUMAN_Y/2) //Mark person as lethal 
-                            costmap->setCost(i+dx, j+dy, 254);
-                    }
-
-                    else{
+                    if(person.ospace){
                         a = gaussian(x,y,cx,cy,amplitude_,person.sx,person.sy,person.orientation);
                     }
 
-                    
+                    else {
+                        if (distance(x,y,cx,cy) <= HUMAN_Y/2 ){
+                            double cost = costmap_2d::LETHAL_OBSTACLE;
+                            costmap->setCost(i+dx, j+dy, cost);
+                            a = costmap_2d::LETHAL_OBSTACLE;
+                        } //Mark person body area as lethal 
+
+                        else{ // Compute gaussian value of the cell
+                        
+                            if(fabs(diff)<M_PI/2)
+                                a = gaussian(x,y,cx,cy,amplitude_,person.sx*factor_,person.sy,person.orientation);
+                            else
+                                a = gaussian(x,y,cx,cy,amplitude_,person.sx,       person.sy,person.orientation);
+            
+                        }
+    
+                    }
+                
                     if(a < cutoff_)
                         continue;
                     unsigned char cvalue = (unsigned char) a;
                     costmap->setCost(i+dx, j+dy, std::max(cvalue, old_cost));
 
-                   
               }
             }
 
