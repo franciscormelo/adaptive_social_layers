@@ -58,12 +58,12 @@ namespace adaptive_social_layers
             if (!person.ospace) 
                 point = std::max(person.sx,person.sy);
             else
-                point = std::max(person.sx,person.sy)*factor_;
+                point = std::max(person.sx,person.sy);
 
-            *min_x = std::min(*min_x, person.position.x - point + 0.5 );
-            *min_y = std::min(*min_y, person.position.y - point + 0.5 );
-            *max_x = std::max(*max_x, person.position.x + point + 0.5 );
-            *max_y = std::max(*max_y, person.position.y + point + 0.5 );
+            *min_x = std::min(*min_x, person.position.x - point + 2 );
+            *min_y = std::min(*min_y, person.position.y - point + 2 );
+            *max_x = std::max(*max_x, person.position.x + point + 2 );
+            *max_y = std::max(*max_y, person.position.y + point + 2 );
 
         }
     }
@@ -93,13 +93,13 @@ namespace adaptive_social_layers
             double point ;
             if (!person.ospace){ 
 
-                base = std::max(person.sx,person.sy) + 0.5  ;
-                point = std::max(person.sx,person.sy) + 0.5;
+                base = std::max(person.sx,person.sy) + 2  ;
+                point = std::max(person.sx,person.sy) + 2;
             }
 
             else{
-                base = std::max(person.sx,person.sy) + 0.5;
-                point = std::max(person.sx,person.sy)*factor_ + 0.5;
+                base = std::max(person.sx,person.sy) + 2;
+                point = std::max(person.sx,person.sy) + 2;
             }
 
             unsigned int width = std::max(1, int( (base + point) / res )),
@@ -170,9 +170,9 @@ namespace adaptive_social_layers
                         else{ // Compute gaussian value of the cell
                         
                             if(fabs(diff)<M_PI/2)
-                                a = gaussian(x,y,cx,cy,amplitude_,person.sx*factor_,person.sy,person.orientation);
+                                a = gaussian(x,y,cx,cy,amplitude_,person.sx,person.sy,person.orientation);
                             else
-                                a = gaussian(x,y,cx,cy,amplitude_,person.sx,       person.sy,person.orientation);
+                                a = gaussian(x,y,cx,cy,amplitude_,person.sx_back,       person.sy,person.orientation);
             
                         }
     

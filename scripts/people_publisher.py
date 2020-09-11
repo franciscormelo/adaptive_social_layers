@@ -81,7 +81,7 @@ class PeoplePublisher():
                 rospy.loginfo("Person Detected")
                 
                 quartenion = [pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w]
-                (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(quartenion)
+                (_, _, yaw) = tf.transformations.euler_from_quaternion(quartenion)
 
                 pose_person = [pose.position.x * 100, pose.position.y * 100,yaw]
                 persons.append(pose_person)
@@ -107,21 +107,26 @@ class PeoplePublisher():
                 aux_p.header.frame_id = "/base_footprint"
                 aux_p.header.stamp = rospy.Time.now()
 
-                sx = (float(pparams[idx][0])/100)/BACK_FACTOR # cm to m
+                sx = (float(pparams[idx][0])/100) # cm to m
                 sy = float(pparams[idx][1])/100 # cm to m
                 gvarx = float(gparams[idx][0]) / 100  # cm to m
                 gvary = float(gparams[idx][1]) / 100  # cm to m
                 
 
     
+                ############## FIXED
+                #sx = 0.9
+                #sy = 0.9
+                #########################
                 for person in group:
 
                     p1 = Person()
                     p1.position.x = person[0] / 100 # cm to m
                     p1.position.y = person[1] / 100 # cm to m
                     p1.orientation = person[2]
-                    p1.sx = sx
-                    p1.sy = sy
+                    p1.sx = sx / 10
+                    p1.sy = sy / 10
+                    p1.sx_back = p1.sx / BACK_FACTOR
                     p1.ospace = False
                     p.people.append(p1)
 
@@ -135,8 +140,8 @@ class PeoplePublisher():
                     p1.position.x = center[0] / 100 # cm to m
                     p1.position.y = center[1] / 100 # cm to m
                     p1.orientation = math.pi
-                    p1.sx = gvarx
-                    p1.sy = gvary
+                    p1.sx = gvarx/10
+                    p1.sy = gvary/10
                     p1.ospace = True
                     p.people.append(p1)
 
