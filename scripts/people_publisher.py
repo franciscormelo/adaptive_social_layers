@@ -94,6 +94,10 @@ class PeoplePublisher():
             app = SpaceModeling(groups) # Space modeling works in cm
             pparams,gparams= app.solve()
 
+            ####
+            # Inserir aqui parametros adaptados
+            ####
+
             p = People()
             p.header.frame_id = "/base_footprint"
             p.header.stamp = rospy.Time.now()
