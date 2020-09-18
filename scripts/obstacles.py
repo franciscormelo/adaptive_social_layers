@@ -11,17 +11,17 @@ import numpy as np
 import math
 
 from bresenham import bresenham
-
+import matplotlib.pyplot as plt
 # Relation between personal frontal space and back space
 BACK_FACTOR = 1.3
-
-# Robot diameter in cm 
-ROBOT_DIM = 60
 
 # CONSTANTS
 # Human Body Dimensions top view in cm 
 HUMAN_Y = 45
 HUMAN_X = 20
+
+#Intersections Treshold
+TRESHOLD = 0
 
 
 def euclidean_distance(x1, y1, x2, y2):
@@ -33,13 +33,17 @@ def euclidean_distance(x1, y1, x2, y2):
 def find_collision(x0, y0, x1, y1, costmap, width):
 
     bresenham_points = list(bresenham(x0, y0, x1, y1))
+    
 
     for point in bresenham_points:
-        index = point[0] * width + point[1]
-        if costmap[index] > 0 :
+        index = point[1] * width + point[0]
+        if costmap[index] > TRESHOLD :
             print("Intersection")
+            print(point)
             return point[0], point[1]
+ 
     return None
+    
 
 
 def adapt_parameters(groups, pparams, gparams, resolution, costmap, origin, width, robot_dim):
@@ -53,10 +57,11 @@ def adapt_parameters(groups, pparams, gparams, resolution, costmap, origin, widt
     for j, group in enumerate(groups):
     # Personal Space Adaptation
 
-        sx = pparams[j][0]
-        sy = pparams[j][1]
-        sx_back = sx / BACK_FACTOR
         for person in group:
+
+            sx = pparams[j][0]
+            sy = pparams[j][1]
+            sx_back = sx / BACK_FACTOR
 
             px = person[0]   # in cm
             py = person[1]  # in cm
@@ -67,20 +72,23 @@ def adapt_parameters(groups, pparams, gparams, resolution, costmap, origin, widt
             angles = [person[2], person[2] + math.pi / 2,
                     person[2] + math.pi, person[2] + (3 * math.pi) / 2]
 
+           
+
             for idx, angle in enumerate(angles):
 
             # d is the search distance to the wall =  gaussian parameter  + robot diameter + safety margin
                 if idx == 0:
-                    d = sx + robot_dim + 20 
+                    d = sx + robot_dim + 10 
                 elif idx == 1 or idx == 3:
-                    d = sy + robot_dim + 20
+                    d = sy + robot_dim + 10
                 elif idx == 2:
-                    d = sx_back + robot_dim + 20
+                    d = sx_back + robot_dim + 10
 
-
+                # VERIFICAR SE PONTO ESTA NOS LIMITES DO MAPA
 
                 px1 = px + (d * math.cos(angle))  # in cm
                 py1 = py + (d * math.sin(angle))  # in cm
+                
 
                 x1 = int((px1 - (resolution/2) - ox) / resolution) # in index 
                 y1 = int((py1 - (resolution/2) - oy) / resolution)  # in index
@@ -131,9 +139,13 @@ def adapt_parameters(groups, pparams, gparams, resolution, costmap, origin, widt
                                 print("NEW sx_back " + str(sx_back))
                             else:
                                 print("Impossible to adapt parameter sx_back")
+      
             parameters = {"sx": sx, "sy": sy, "sx_back":sx_back}
+
             group_params.append(parameters)
+
         groups_params.append(group_params)
 
-    return groups_params
+
+    return groups_params, gparams
 

@@ -5,11 +5,13 @@ eng = matlab.engine.start_matlab()
 eng.cd(r'/home/flash/catkin_ws/src/adaptive_social_layers/scripts', nargout=0)
 
 import rospy
+from nav_msgs.msg import OccupancyGrid
 from group_msgs.msg import People, Person, Groups
 from geometry_msgs.msg import Pose, PoseArray
 import tf
 import math
 from algorithm import SpaceModeling
+from obstacles import adapt_parameters
 import copy
 
 import actionlib
@@ -21,6 +23,9 @@ MDL = 8000
 
 # Relation between personal frontal space and back space
 BACK_FACTOR = 1.3
+
+# Robot radius
+ROBOT_DIM = 60 # in cm
 
 def calc_o_space(persons):
     """Calculates the o-space center of the group given group members pose"""
@@ -48,12 +53,16 @@ class PeoplePublisher():
         rospy.init_node('PeoplePublisher', anonymous=True)
         
         rospy.Subscriber("/faces",PoseArray,self.callback,queue_size=1)
+        rospy.Subscriber("/move_base_flex/global_costmap/costmap",OccupancyGrid , self.callbackCm, queue_size=10)
         self.loop_rate = rospy.Rate(rospy.get_param('~loop_rate', 10.0))
+
+        self.costmap_received = False
         self.pose_received = False
 
         self.data = None
-        self.pub = rospy.Publisher('/people', People, queue_size=1)
-        self.pubg = rospy.Publisher('/groups', Groups, queue_size=1)
+        self.pub = rospy.Publisher('/people', People, queue_size=10)
+        self.pubg = rospy.Publisher('/groups', Groups, queue_size=10)
+
 
     def callback(self,data):
         """
@@ -61,7 +70,13 @@ class PeoplePublisher():
         
         self.data = data
         self.pose_received = True
-        
+    
+
+    def callbackCm(self, data):
+        """ Costmap Callback. """
+        self.costmap = data
+        self.costmap_received = True
+            
 
     def publish(self):
         """
@@ -92,11 +107,19 @@ class PeoplePublisher():
   
         if groups:
             app = SpaceModeling(groups) # Space modeling works in cm
-            pparams,gparams= app.solve()
+            pparams,gparams = app.solve()
 
             ####
-            # Inserir aqui parametros adaptados
+            # Obstacles works in cm -> Covnert to meters
+            ox = self.costmap.info.origin.position.x * 100
+            oy = self.costmap.info.origin.position.y * 100
+            origin = [ox, oy]
+            resolution = self.costmap.info.resolution * 100
+            width = self.costmap.info.width * 100 
+            costmap = self.costmap.data
+            #pparams_aux, gparams_aux = adapt_parameters(groups, pparams, gparams, resolution, costmap, origin, width, ROBOT_DIM)
             ####
+
 
             p = People()
             p.header.frame_id = "/base_footprint"
@@ -116,11 +139,11 @@ class PeoplePublisher():
                 gvarx = float(gparams[idx][0]) / 100  # cm to m
                 gvary = float(gparams[idx][1]) / 100  # cm to m
                 
-
+                
     
                 ############## FIXED
-                #sx = 0.9
-                #sy = 0.9
+                # sx = 0.9
+                # sy = 0.9
                 #########################
                 for person in group:
 
@@ -171,9 +194,12 @@ class PeoplePublisher():
     def run_behavior(self):
         while not rospy.is_shutdown():
             if self.pose_received:
-                
                 self.pose_received = False
-                self.publish()
+
+                if self.costmap_received:
+                    self.costmap_received = False
+
+                    self.publish()
 
 if __name__ == '__main__':
     people_publisher = PeoplePublisher()
