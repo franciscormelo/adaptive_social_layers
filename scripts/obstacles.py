@@ -10,6 +10,8 @@
 import numpy as np
 import math
 
+import rospy
+
 from bresenham import bresenham
 import matplotlib.pyplot as plt
 # Relation between personal frontal space and back space
@@ -31,18 +33,27 @@ def euclidean_distance(x1, y1, x2, y2):
 
 
 def find_collision(x0, y0, x1, y1, costmap, width):
-
+    costmap = list(costmap)
     bresenham_points = list(bresenham(x0, y0, x1, y1))
-    
-
+    # m = np.array(costmap)
+    # c = m.reshape(width,width)
+    # plt.imshow(c)
+    # plt.show()
     for point in bresenham_points:
         index = point[1] * width + point[0]
+        
         if costmap[index] > TRESHOLD :
-            print("Intersection")
-            print(point)
+            print(index)
+            rospy.loginfo("Intersection")
             return point[0], point[1]
- 
-    return None
+        else:
+            costmap[index] = 2
+            m = np.array(costmap)
+            c = m.reshape(width,width)
+            plt.imshow(c)
+            plt.show()
+            
+    
     
 
 
@@ -59,9 +70,12 @@ def adapt_parameters(groups, pparams, gparams, resolution, costmap, origin, widt
 
         for person in group:
 
-            sx = pparams[j][0]
-            sy = pparams[j][1]
+            sx = pparams[j][0] 
+            sy = pparams[j][1] 
             sx_back = sx / BACK_FACTOR
+
+            print(sx)
+            print(sy)
 
             px = person[0]   # in cm
             py = person[1]  # in cm
@@ -73,7 +87,8 @@ def adapt_parameters(groups, pparams, gparams, resolution, costmap, origin, widt
                     person[2] + math.pi, person[2] + (3 * math.pi) / 2]
 
            
-
+# CORRIGIR TENHO DE ALTERAR ZONA DE PROCURA: RACIOCINIO ANTIGO NAO SE APLICA AGORa, tenho de ver pensar melhor
+#PONTO INICIAL E FINAL DE PROCURA SAO DIFERENTES
             for idx, angle in enumerate(angles):
 
             # d is the search distance to the wall =  gaussian parameter  + robot diameter + safety margin
@@ -97,7 +112,7 @@ def adapt_parameters(groups, pparams, gparams, resolution, costmap, origin, widt
 
                 if g is not None:
                     dx = (g[0] * resolution) + (resolution/2) + ox # in cm 
-                    dy = (g[0] * resolution) + (resolution/2) + oy # in cm
+                    dy = (g[1] * resolution) + (resolution/2) + oy # in cm
     
 
                     # dis is the distance from a person to a wall in a specific orientation
@@ -111,9 +126,9 @@ def adapt_parameters(groups, pparams, gparams, resolution, costmap, origin, widt
                                     sx = HUMAN_X/2
                             elif dis - robot_dim >= HUMAN_X / 2:
                                 sx = dis - robot_dim
-                                print("NEW sx " + str(sx))
+                                rospy.loginfo("NEW sx " + str(sx))
                             else:
-                                print("Impossible to adapt parameter sx")
+                                rospy.loginfo("Impossible to adapt parameter sx")
 
                     elif idx == 1 or idx == 3:
                         if dis - sy < robot_dim:  # Check if robot is able to naviagte
@@ -123,10 +138,10 @@ def adapt_parameters(groups, pparams, gparams, resolution, costmap, origin, widt
                                     sy = HUMAN_Y/2
                             elif dis - robot_dim >= HUMAN_Y / 2:
                                 sy = dis - robot_dim
-                                print("NEW sy " + str(sy))
+                                rospy.loginfo("NEW sy " + str(sy))
 
                             else:
-                                print("Impossible to adapt parameter sy")
+                                rospy.loginfo("Impossible to adapt parameter sy")
                     elif idx == 2:
 
                         if dis - sx_back < robot_dim:  # Check if robot is able to naviagte
@@ -136,9 +151,9 @@ def adapt_parameters(groups, pparams, gparams, resolution, costmap, origin, widt
                                     sx_back = HUMAN_X/2
                             elif dis - robot_dim >= HUMAN_X / 2:
                                 sx_back = dis - robot_dim
-                                print("NEW sx_back " + str(sx_back))
+                                rospy.loginfo("NEW sx_back " + str(sx_back))
                             else:
-                                print("Impossible to adapt parameter sx_back")
+                                rospy.loginfo("Impossible to adapt parameter sx_back")
       
             parameters = {"sx": sx, "sy": sy, "sx_back":sx_back}
 

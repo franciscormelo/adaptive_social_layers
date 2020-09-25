@@ -6,16 +6,17 @@ eng.cd(r'/home/flash/catkin_ws/src/adaptive_social_layers/scripts', nargout=0)
 
 import rospy
 from nav_msgs.msg import OccupancyGrid
+from map_msgs.msg import OccupancyGridUpdate
 from group_msgs.msg import People, Person, Groups
 from geometry_msgs.msg import Pose, PoseArray
-import tf
-import math
 from algorithm import SpaceModeling
 from obstacles import adapt_parameters
+
+import tf
+import math
 import copy
-
 import actionlib
-
+import numpy as np
 
 
 STRIDE = 65 # in cm
@@ -41,8 +42,12 @@ def calc_o_space(persons):
 
     center = [c_x / g_size, c_y / g_size]
 
-
     return center
+
+def get_index(x, y, width):
+    """ """
+    
+    return (y * width) + x
 
 class PeoplePublisher():
     """
@@ -53,10 +58,14 @@ class PeoplePublisher():
         rospy.init_node('PeoplePublisher', anonymous=True)
         
         rospy.Subscriber("/faces",PoseArray,self.callback,queue_size=1)
-        rospy.Subscriber("/move_base_flex/global_costmap/costmap",OccupancyGrid , self.callbackCm, queue_size=10)
+                # https://answers.ros.org/question/207620/global-costmap-update/
+        # We need to subscribe both costmap and costmap update topic
+        rospy.Subscriber("/move_base_flex/global_costmap/costmap",OccupancyGrid , self.callbackCm, queue_size=1)
+        rospy.Subscriber("/move_base_flex/global_costmap/costmap_updates",OccupancyGridUpdate , self.callbackCmUp, queue_size=10)
         self.loop_rate = rospy.Rate(rospy.get_param('~loop_rate', 10.0))
 
         self.costmap_received = False
+        self.costmap_up_received = False
         self.pose_received = False
 
         self.data = None
@@ -74,8 +83,32 @@ class PeoplePublisher():
 
     def callbackCm(self, data):
         """ Costmap Callback. """
+
         self.costmap = data
+        self.costmap_grid = list(data.data)
         self.costmap_received = True
+
+
+    def callbackCmUp(self, data):
+        """ Costmap Update Callback. """
+
+        #https://answers.ros.org/question/207620/global-costmap-update/
+        # We have to update the global costmap with the global costmap update
+        if self.costmap_received:
+            self.costmap_up = data
+            self.costmap_up_received = True
+
+            # Update global costmap
+            idx = 0
+
+            for y in range(self.costmap_up.y, self.costmap_up.y + self.costmap_up.height):
+                for x in range(self.costmap_up.x, self.costmap_up.x + self.costmap_up.width):
+                
+                    
+                    self.costmap_grid[get_index(x,y, self.costmap.info.height)] = self.costmap_up.data[idx]
+                    idx +=1
+
+            self.costmap.data = tuple(self.costmap_grid)
             
 
     def publish(self):
@@ -110,16 +143,18 @@ class PeoplePublisher():
             pparams,gparams = app.solve()
 
             ####
-            # Obstacles works in cm -> Covnert to meters
+            # Obstacles works in cm -> Convert to meters
             ox = self.costmap.info.origin.position.x * 100
             oy = self.costmap.info.origin.position.y * 100
             origin = [ox, oy]
             resolution = self.costmap.info.resolution * 100
-            width = self.costmap.info.width * 100 
+            width = self.costmap.info.width 
+            height = self.costmap.info.height 
             costmap = self.costmap.data
-            #pparams_aux, gparams_aux = adapt_parameters(groups, pparams, gparams, resolution, costmap, origin, width, ROBOT_DIM)
+            pparams_aux, gparams_aux = adapt_parameters(groups, pparams, gparams, resolution, costmap, origin, width, ROBOT_DIM)
             ####
 
+            print(pparams_aux)
 
             p = People()
             p.header.frame_id = "/base_footprint"
@@ -134,11 +169,13 @@ class PeoplePublisher():
                 aux_p.header.frame_id = "/base_footprint"
                 aux_p.header.stamp = rospy.Time.now()
 
+                #### MUDAR
                 sx = (float(pparams[idx][0])/100) # cm to m
                 sy = float(pparams[idx][1])/100 # cm to m
                 gvarx = float(gparams[idx][0]) / 100  # cm to m
                 gvary = float(gparams[idx][1]) / 100  # cm to m
                 
+                #### Mudar
                 
     
                 ############## FIXED
@@ -151,9 +188,11 @@ class PeoplePublisher():
                     p1.position.x = person[0] / 100 # cm to m
                     p1.position.y = person[1] / 100 # cm to m
                     p1.orientation = person[2]
+                    #### MUDAR
                     p1.sx = sx / 10
                     p1.sy = sy / 10
                     p1.sx_back = p1.sx / BACK_FACTOR
+                    ############## MUDAR
                     p1.ospace = False
                     p.people.append(p1)
 
@@ -167,8 +206,12 @@ class PeoplePublisher():
                     p1.position.x = center[0] / 100 # cm to m
                     p1.position.y = center[1] / 100 # cm to m
                     p1.orientation = math.pi
+
+                    #MUDAR
                     p1.sx = gvarx/10
                     p1.sy = gvary/10
+
+                    ######
                     p1.ospace = True
                     p.people.append(p1)
 
@@ -196,8 +239,8 @@ class PeoplePublisher():
             if self.pose_received:
                 self.pose_received = False
 
-                if self.costmap_received:
-                    self.costmap_received = False
+                if self.costmap_up_received:
+                    self.costmap_up_received = False
 
                     self.publish()
 

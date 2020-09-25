@@ -6,6 +6,7 @@ eng.cd(r'/home/flash/catkin_ws/src/adaptive_social_layers/scripts', nargout=0)
 
 import rospy
 from group_msgs.msg import People, Person, Groups
+from people_msgs.msg import People as Ppl
 from geometry_msgs.msg import Pose, PoseArray
 import tf
 import math
@@ -45,15 +46,15 @@ class PeoplePublisher():
     def __init__(self):
         """
         """
-        rospy.init_node('PeoplePublisher', anonymous=True)
+        rospy.init_node('PeoplePublisherLegs', anonymous=True)
         
-        rospy.Subscriber("/faces",PoseArray,self.callback,queue_size=1)
+        rospy.Subscriber("/people_laser",Ppl,self.callback,queue_size=1)
         self.loop_rate = rospy.Rate(rospy.get_param('~loop_rate', 10.0))
         self.pose_received = False
 
         self.data = None
-        self.pub = rospy.Publisher('/people', People, queue_size=1)
-        self.pubg = rospy.Publisher('/groups', Groups, queue_size=1)
+        self.pub = rospy.Publisher('/people_legs', People, queue_size=1)
+        self.pubg = rospy.Publisher('/groups_legs', Groups, queue_size=1)
 
     def callback(self,data):
         """
@@ -64,25 +65,28 @@ class PeoplePublisher():
         
 
     def publish(self):
-        """
-        """
+        """                                                                                                                                                                         
+        """                                                                                                                             
         
         data = self.data
         groups = []
         group = []
 
         persons = []
+        print(data)
 
-        if not data.poses:
+        if not data.people:
             groups = []
         else:
-            for pose in data.poses:
+            for pose in data.people:
+                print(pose)
+                #!!!! VERY IMPORTANT -> People measurements are given in odom frame
 
                 rospy.loginfo("Person Detected")
-                
-                quartenion = [pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w]
-                (_, _, yaw) = tf.transformations.euler_from_quaternion(quartenion)
 
+                # Compute orientation from velocity
+                yaw = math.atan2(pose.velocity.y,pose.velocity.x)
+                
                 pose_person = [pose.position.x * 100, pose.position.y * 100,yaw]
                 persons.append(pose_person)
 
@@ -99,16 +103,16 @@ class PeoplePublisher():
             ####
 
             p = People()
-            p.header.frame_id = "/base_footprint"
+            p.header.frame_id = self.data.header.frame_id
             p.header.stamp = rospy.Time.now()
 
             g = Groups()
-            g.header.frame_id = "/base_footprint"
+            g.header.frame_id = self.data.header.frame_id
             g.header.stamp = rospy.Time.now()
             
             for idx,group in enumerate(groups):
                 aux_p = People()
-                aux_p.header.frame_id = "/base_footprint"
+                aux_p.header.frame_id = self.data.header.frame_id
                 aux_p.header.stamp = rospy.Time.now()
 
                 sx = (float(pparams[idx][0])/100) # cm to m
@@ -159,12 +163,12 @@ class PeoplePublisher():
 
         else:
             p = People()
-            p.header.frame_id = "/base_footprint"
+            p.header.frame_id = self.data.header.frame_id
             p.header.stamp = rospy.Time.now()
             self.pub.publish(p)
 
             g = Groups()
-            g.header.frame_id = "/base_footprint"
+            g.header.frame_id = self.data.header.frame_id
             g.header.stamp = rospy.Time.now()
             self.pubg.publish(g)
 
