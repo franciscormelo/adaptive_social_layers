@@ -23,7 +23,7 @@ HUMAN_Y = 45
 HUMAN_X = 20
 
 #Intersections Treshold
-TRESHOLD = 0
+TRESHOLD = 100 #Occupied occupancy grid treshold
 
 
 def euclidean_distance(x1, y1, x2, y2):
@@ -42,16 +42,18 @@ def find_collision(x0, y0, x1, y1, costmap, width):
     for point in bresenham_points:
         index = point[1] * width + point[0]
         
-        if costmap[index] > TRESHOLD :
+        if int(costmap[index]) == TRESHOLD :
             print(index)
             rospy.loginfo("Intersection")
             return point[0], point[1]
         else:
-            costmap[index] = 2
-            m = np.array(costmap)
-            c = m.reshape(width,width)
-            plt.imshow(c)
-            plt.show()
+            costmap[index] = 255
+
+    m = np.array(costmap)
+    c = m.reshape(width,width)
+    plt.imshow(c)
+    plt.show()
+
             
     
     
