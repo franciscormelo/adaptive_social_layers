@@ -35,28 +35,19 @@ def euclidean_distance(x1, y1, x2, y2):
 def find_collision(x0, y0, x1, y1, costmap, width):
     costmap = list(costmap)
     bresenham_points = list(bresenham(x0, y0, x1, y1))
-    # m = np.array(costmap)
-    # c = m.reshape(width,width)
-    # plt.imshow(c)
-    # plt.show()
+
     for point in bresenham_points:
         index = point[1] * width + point[0]
         
-        if int(costmap[index]) == TRESHOLD :
-            print(index)
+        if int(costmap[index]) == TRESHOLD:
+            # m = np.array(costmap)
+            # c = m.reshape(width,width)
+            # plt.imshow(c)
+            # plt.show()
             rospy.loginfo("Intersection")
             return point[0], point[1]
-        else:
-            costmap[index] = 255
-
-    m = np.array(costmap)
-    c = m.reshape(width,width)
-    plt.imshow(c)
-    plt.show()
-
-            
-    
-    
+        # else:
+        #     costmap[index] = 255
 
 
 def adapt_parameters(groups, pparams, gparams, resolution, costmap, origin, width, robot_dim):
@@ -76,8 +67,6 @@ def adapt_parameters(groups, pparams, gparams, resolution, costmap, origin, widt
             sy = pparams[j][1] 
             sx_back = sx / BACK_FACTOR
 
-            print(sx)
-            print(sy)
 
             px = person[0]   # in cm
             py = person[1]  # in cm

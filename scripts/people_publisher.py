@@ -128,8 +128,9 @@ class PeoplePublisher():
                     p1.position.x = person[0] / 100 # cm to m
                     p1.position.y = person[1] / 100 # cm to m
                     p1.orientation = person[2]
-                    p1.sx = sx / 10
-                    p1.sy = sy / 10
+                    p1.sx = sx 
+                    p1.sy = sy
+
                     p1.sx_back = p1.sx / BACK_FACTOR
                     p1.ospace = False
                     p.people.append(p1)
@@ -144,8 +145,8 @@ class PeoplePublisher():
                     p1.position.x = center[0] / 100 # cm to m
                     p1.position.y = center[1] / 100 # cm to m
                     p1.orientation = math.pi
-                    p1.sx = gvarx/10
-                    p1.sy = gvary/10
+                    p1.sx = gvarx
+                    p1.sy = gvary
                     p1.ospace = True
                     p.people.append(p1)
 

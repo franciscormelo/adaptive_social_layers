@@ -156,8 +156,12 @@ namespace adaptive_social_layers
                     double diff = angles::shortest_angular_distance(angle, ma);
                     double a;
 
+                    double sx = (pow(person.sx, 2) / log(cutoff_/amplitude_))/ (-2);
+                    double sy = (pow(person.sy, 2) / log(cutoff_/amplitude_))/ (-2);
+                    double sx_back = (pow(person.sx_back, 2) / log(cutoff_/amplitude_))/ (-2);
+
                     if(person.ospace){
-                        a = gaussian(x,y,cx,cy,amplitude_,person.sx,person.sy,person.orientation);
+                        a = gaussian(x,y,cx,cy,amplitude_, sx,sy,person.orientation);
                     }
 
                     else {
@@ -168,11 +172,11 @@ namespace adaptive_social_layers
                         } //Mark person body area as lethal 
 
                         else{ // Compute gaussian value of the cell
-                        
+
                             if(fabs(diff)<M_PI/2)
-                                a = gaussian(x,y,cx,cy,amplitude_,person.sx,person.sy,person.orientation);
+                                a = gaussian(x,y,cx,cy,amplitude_, sx, sy,person.orientation);
                             else
-                                a = gaussian(x,y,cx,cy,amplitude_,person.sx_back,       person.sy,person.orientation);
+                                a = gaussian(x,y,cx,cy,amplitude_, sx_back,       sy,person.orientation);
             
                         }
     

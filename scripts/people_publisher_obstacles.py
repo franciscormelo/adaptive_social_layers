@@ -126,10 +126,8 @@ class PeoplePublisher():
             width = self.map.info.width 
             height = self.map.info.height 
             map = self.map.data
-            pparams_aux, gparams_aux = adapt_parameters(groups, pparams, gparams, resolution, map, origin, width, ROBOT_DIM)
-            ####
-
-            print(pparams_aux)
+            pparams_adapt, gparams_aux = adapt_parameters(groups, pparams, gparams, resolution, map, origin, width, ROBOT_DIM)
+            print(pparams_adapt)
 
             p = People()
             p.header.frame_id = "/base_footprint"
@@ -145,8 +143,6 @@ class PeoplePublisher():
                 aux_p.header.stamp = rospy.Time.now()
 
                 #### MUDAR
-                sx = (float(pparams[idx][0])/100) # cm to m
-                sy = float(pparams[idx][1])/100 # cm to m
                 gvarx = float(gparams[idx][0]) / 100  # cm to m
                 gvary = float(gparams[idx][1]) / 100  # cm to m
                 
@@ -157,17 +153,21 @@ class PeoplePublisher():
                 # sx = 0.9
                 # sy = 0.9
                 #########################
-                for person in group:
+                for pidx, person in enumerate(group):
 
                     p1 = Person()
                     p1.position.x = person[0] / 100 # cm to m
                     p1.position.y = person[1] / 100 # cm to m
                     p1.orientation = person[2]
-                    #### MUDAR
-                    p1.sx = sx / 10
-                    p1.sy = sy / 10
-                    p1.sx_back = p1.sx / BACK_FACTOR
-                    ############## MUDAR
+
+                    sx = pparams_adapt[idx][pidx]["sx"]/ 100
+                    sy =  pparams_adapt[idx][pidx]["sy"] / 100
+                    sx_back = pparams_adapt[idx][pidx]["sx_back"] / 100
+                    
+                    p1.sx = sx 
+                    p1.sy = sy 
+                    p1.sx_back = sx_back 
+                    
                     p1.ospace = False
                     p.people.append(p1)
 
@@ -183,8 +183,8 @@ class PeoplePublisher():
                     p1.orientation = math.pi
 
                     #MUDAR
-                    p1.sx = gvarx/10
-                    p1.sy = gvary/10
+                    p1.sx = gvarx
+                    p1.sy = gvary
 
                     ######
                     p1.ospace = True
@@ -218,6 +218,7 @@ class PeoplePublisher():
                     #self.map_received = False
 
                     self.publish()
+                    
 
 if __name__ == '__main__':
     people_publisher = PeoplePublisher()
