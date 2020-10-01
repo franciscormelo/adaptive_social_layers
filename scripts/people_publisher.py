@@ -106,7 +106,7 @@ class PeoplePublisher():
                 ap_points.poses.append(ap_pose)
                 #########################
                 (_, _, yaw) = tf.transformations.euler_from_quaternion(quaternion)
-
+                print(yaw)
                 pose_person = [pose.position.x * 100, pose.position.y * 100,yaw]
                 persons.append(pose_person)
             self.pubd.publish(ap_points)
@@ -200,7 +200,7 @@ class PeoplePublisher():
                 
                 self.pose_received = False
                 self.publish()
-
+               
 if __name__ == '__main__':
     people_publisher = PeoplePublisher()
     people_publisher.run_behavior()

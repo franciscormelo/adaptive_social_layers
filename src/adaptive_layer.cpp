@@ -177,7 +177,7 @@ namespace adaptive_social_layers
                             if(fabs(diff)<M_PI/2)
                                 a = gaussian(x,y,cx,cy,amplitude_, sx, sy,person.orientation);
                             else
-                                a = gaussian(x,y,cx,cy,amplitude_, sx_back,       sy,person.orientation);
+                                a = gaussian(x,y,cx,cy,amplitude_, sx_back, sy,person.orientation);
             
                         }
     
