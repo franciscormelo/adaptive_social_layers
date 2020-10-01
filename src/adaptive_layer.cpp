@@ -156,12 +156,13 @@ namespace adaptive_social_layers
                     double diff = angles::shortest_angular_distance(angle, ma);
                     double a;
 
+                    // Convert personal space parameters to ros gaussian parameters for a fixed amplitude and cutoff 
                     double sx = (pow(person.sx, 2) / log(cutoff_/amplitude_))/ (-2);
                     double sy = (pow(person.sy, 2) / log(cutoff_/amplitude_))/ (-2);
                     double sx_back = (pow(person.sx_back, 2) / log(cutoff_/amplitude_))/ (-2);
 
                     if(person.ospace){
-                        a = gaussian(x,y,cx,cy,amplitude_, sx,sy,person.orientation);
+                        a = gaussian(x,y,cx,cy,amplitude_,sx,sy,person.orientation);
                     }
 
                     else {

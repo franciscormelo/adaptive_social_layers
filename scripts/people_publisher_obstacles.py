@@ -26,7 +26,7 @@ MDL = 8000
 BACK_FACTOR = 1.3
 
 # Robot radius
-ROBOT_DIM = 60 # in cm
+ROBOT_DIM = 100 # in cm
 
 def calc_o_space(persons):
     """Calculates the o-space center of the group given group members pose"""
@@ -143,8 +143,8 @@ class PeoplePublisher():
                 aux_p.header.stamp = rospy.Time.now()
 
                 #### MUDAR
-                gvarx = float(gparams[idx][0]) / 100  # cm to m
-                gvary = float(gparams[idx][1]) / 100  # cm to m
+                gvarx = float(gparams[idx][0]) / 100.0  # cm to m
+                gvary = float(gparams[idx][1]) / 100.0  # cm to m
                 
                 #### Mudar
                 
@@ -156,13 +156,17 @@ class PeoplePublisher():
                 for pidx, person in enumerate(group):
 
                     p1 = Person()
-                    p1.position.x = person[0] / 100 # cm to m
-                    p1.position.y = person[1] / 100 # cm to m
+                    p1.position.x = person[0] / 100.0 # cm to m
+                    p1.position.y = person[1] / 100.0 # cm to m
                     p1.orientation = person[2]
 
-                    sx = pparams_adapt[idx][pidx]["sx"]/ 100
-                    sy =  pparams_adapt[idx][pidx]["sy"] / 100
-                    sx_back = pparams_adapt[idx][pidx]["sx_back"] / 100
+                    sx = pparams_adapt[idx][pidx]["sx"]/ 100.0
+                    sy =  pparams_adapt[idx][pidx]["sy"] / 100.0
+
+                    print(pparams_adapt[idx][pidx])
+                    print(sy)
+                    
+                    sx_back = pparams_adapt[idx][pidx]["sx_back"] / 100.0
                     
                     p1.sx = sx 
                     p1.sy = sy 
@@ -178,8 +182,8 @@ class PeoplePublisher():
                 if len(group) > 1:
                     p1 = Person()
                     center = calc_o_space(group)
-                    p1.position.x = center[0] / 100 # cm to m
-                    p1.position.y = center[1] / 100 # cm to m
+                    p1.position.x = center[0] / 100.0 # cm to m
+                    p1.position.y = center[1] / 100.0 # cm to m
                     p1.orientation = math.pi
 
                     #MUDAR
