@@ -11,6 +11,7 @@ import tf
 import math
 from algorithm import SpaceModeling
 import copy
+from visualization_msgs.msg import Marker
 
 import actionlib
 
@@ -55,6 +56,8 @@ class PeoplePublisher():
         self.pub = rospy.Publisher('/people', People, queue_size=1)
         self.pubg = rospy.Publisher('/groups', Groups, queue_size=1)
 
+        self.pubd = rospy.Publisher('/people_detections', PoseArray, queue_size=1)
+
     def callback(self,data):
         """
         """
@@ -73,18 +76,40 @@ class PeoplePublisher():
 
         persons = []
 
+        ap_points = PoseArray()
+        ap_points.header.frame_id = "/base_footprint"
+        ap_points.header.stamp = rospy.Time.now()
+
         if not data.poses:
             groups = []
         else:
             for pose in data.poses:
 
                 rospy.loginfo("Person Detected")
+
+
                 
-                quartenion = [pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w]
-                (_, _, yaw) = tf.transformations.euler_from_quaternion(quartenion)
+                quaternion = [pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w]
+
+
+                ######################
+                ap_pose = Pose()
+                ap_pose.position.x = pose.position.x
+                ap_pose.position.y = pose.position.y
+                ap_pose.position.z = 0.1
+
+                ap_pose.orientation.x = quaternion[0]
+                ap_pose.orientation.y = quaternion[1]
+                ap_pose.orientation.z = quaternion[2]
+                ap_pose.orientation.w = quaternion[3]
+                
+                ap_points.poses.append(ap_pose)
+                #########################
+                (_, _, yaw) = tf.transformations.euler_from_quaternion(quaternion)
 
                 pose_person = [pose.position.x * 100, pose.position.y * 100,yaw]
                 persons.append(pose_person)
+            self.pubd.publish(ap_points)
 
         # Run GCFF gcff.m Matlab function      
         if persons:
