@@ -116,8 +116,6 @@ class PeoplePublisher():
 
                 
                 quaternion = [pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w]
-
-
                 ###################### Pose Array Marker of the individuals
                 ap_pose = Pose()
                 ap_pose.position.x = pose.position.x

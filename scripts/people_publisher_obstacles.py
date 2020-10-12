@@ -44,6 +44,16 @@ def calc_o_space(persons):
 
     return center
 
+def rotate(px, py, angle):
+    """
+    Rotate a point counterclockwise by a given angle around a given origin.
+    The angle should be given in radians.
+    """
+    qx = math.cos(angle) * px - math.sin(angle) * py
+    qy = math.sin(angle) * px + math.cos(angle) * py
+
+    return qx, qy
+
 def get_index(x, y, width):
     """ """
     
@@ -96,6 +106,19 @@ class PeoplePublisher():
 
         persons = []
 
+        listener = tf.TransformListener()
+
+        while not rospy.is_shutdown():
+            try:
+                (trans,rot) = listener.lookupTransform('/map', '/base_footprint', rospy.Time(0))
+                break
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                continue
+
+        tx = trans[0]
+        ty = trans[1]
+        (_, _, t_yaw) = tf.transformations.euler_from_quaternion(rot)
+
         if not data.poses:
             groups = []
         else:
@@ -106,7 +129,15 @@ class PeoplePublisher():
                 quartenion = [pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w]
                 (_, _, yaw) = tf.transformations.euler_from_quaternion(quartenion)
 
-                pose_person = [pose.position.x * 100, pose.position.y * 100,yaw]
+                
+                # Pose transformation from base footprint frame to map frame
+                (px, py) = rotate(pose.position.x, pose.position.y, t_yaw)
+                pose_x = px + tx
+                pose_y = py + ty
+                pose_yaw = yaw + t_yaw
+
+
+                pose_person = (pose_x  * 100, pose_y * 100,  pose_yaw)
                 persons.append(pose_person)
 
         # Run GCFF gcff.m Matlab function      
@@ -131,16 +162,16 @@ class PeoplePublisher():
             
 
             p = People()
-            p.header.frame_id = "/base_footprint"
+            p.header.frame_id = "/map"
             p.header.stamp = rospy.Time.now()
 
             g = Groups()
-            g.header.frame_id = "/base_footprint"
+            g.header.frame_id = "/map"
             g.header.stamp = rospy.Time.now()
             
             for idx,group in enumerate(groups):
                 aux_p = People()
-                aux_p.header.frame_id = "/base_footprint"
+                aux_p.header.frame_id = "/map"
                 aux_p.header.stamp = rospy.Time.now()
 
                 
@@ -201,12 +232,12 @@ class PeoplePublisher():
 
         else:
             p = People()
-            p.header.frame_id = "/base_footprint"
+            p.header.frame_id = "/map"
             p.header.stamp = rospy.Time.now()
             self.pub.publish(p)
 
             g = Groups()
-            g.header.frame_id = "/base_footprint"
+            g.header.frame_id = "/map"
             g.header.stamp = rospy.Time.now()
             self.pubg.publish(g)
 
