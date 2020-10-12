@@ -14,6 +14,10 @@ import rospy
 
 from bresenham import bresenham
 import matplotlib.pyplot as plt
+
+
+STRIDE = 65 # in cm
+
 # Relation between personal frontal space and back space
 BACK_FACTOR = 1.3
 
@@ -24,6 +28,22 @@ HUMAN_X = 20
 
 #Intersections Treshold
 TRESHOLD = 100 #Occupied occupancy grid treshold
+
+def calc_o_space(persons):
+    """Calculates the o-space center of the group given group members pose"""
+    c_x = 0
+    c_y = 0
+    
+# Group size
+    g_size = len(persons)
+    
+    for person in persons:
+        c_x += person[0] + math.cos(person[2]) * STRIDE
+        c_y += person[1] + math.sin(person[2]) * STRIDE
+
+    center = [c_x / g_size, c_y / g_size]
+
+    return center
 
 
 def euclidean_distance(x1, y1, x2, y2):
@@ -50,7 +70,7 @@ def find_collision(x0, y0, x1, y1, costmap, width):
         #     costmap[index] = 255
 
 
-def adapt_parameters(groups, pparams, gparams, resolution, costmap, origin, width, robot_dim):
+def adapt_parameters(groups, pparams, oparams, resolution, costmap, origin, width, robot_dim):
     """ """
 
     ox = origin[0]
@@ -59,7 +79,53 @@ def adapt_parameters(groups, pparams, gparams, resolution, costmap, origin, widt
     groups_params = []
 
     for j, group in enumerate(groups):
-    # Personal Space Adaptation
+
+
+        # Group Space Adaptation
+                
+        group_pos = calc_o_space(group)
+        gx = group_pos[0]   # in cm
+        gy = group_pos[1]   # in cm
+
+        xg0 = int((gx - (resolution/2) - ox) / resolution)  # in index
+        yg0 = int((gy - (resolution/2) - oy) / resolution)  # in index
+
+        group_angles = [0, math.pi/2, math.pi, (3*math.pi)/2]
+        
+        for idx, angle in enumerate(group_angles):
+            d = oparams[j][0] + robot_dim + 10
+            
+
+            xg1 = gx + (d * math.cos(angle))  # in cm
+            yg1 = gy + (d * math.sin(angle))  # in cm
+
+            xi = int((xg1 - (resolution/2) - ox) / resolution)  # in index
+            yi = int((yg1 - (resolution/2) - oy) / resolution)  # in index
+
+            gg = find_collision(xg0, yg0, xi, yi, costmap,width)
+
+            if gg is not None:
+                dx = (gg[0] * resolution) + (resolution/2) + ox  # in cm   
+                dy = (gg[1] * resolution) + (resolution/2) + oy  # in cm
+            
+
+                # dis is the distance from a person to a wall in a specific orientation
+                dis = euclidean_distance(gx, gy, dx, dy)  # dis in cm
+                
+                if idx == 0 or idx ==2:
+                    if dis - oparams[j][0] < robot_dim:  # Check if robot is able to naviagte
+                        oparams[j][0] = dis - robot_dim
+                        print("NEW group x " + str(oparams[j][0]))
+
+                elif idx == 1 or idx == 3:
+                    if dis - oparams[j][1] < robot_dim:  # Check if robot is able to naviagte
+                        oparams[j][1] = dis - robot_dim
+                        print("NEW group y " + str(oparams[j][1]))
+
+
+
+
+        # Personal Space Adaptation
 
         for person in group:
 
@@ -78,8 +144,6 @@ def adapt_parameters(groups, pparams, gparams, resolution, costmap, origin, widt
                     person[2] + math.pi, person[2] + (3 * math.pi) / 2]
 
            
-# CORRIGIR TENHO DE ALTERAR ZONA DE PROCURA: RACIOCINIO ANTIGO NAO SE APLICA AGORa, tenho de ver pensar melhor
-#PONTO INICIAL E FINAL DE PROCURA SAO DIFERENTES
             for idx, angle in enumerate(angles):
 
             # d is the search distance to the wall =  gaussian parameter  + robot diameter + safety margin
@@ -153,5 +217,5 @@ def adapt_parameters(groups, pparams, gparams, resolution, costmap, origin, widt
         groups_params.append(group_params)
 
 
-    return groups_params, gparams
+    return groups_params, oparams
 

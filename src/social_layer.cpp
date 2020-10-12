@@ -16,7 +16,7 @@ namespace adaptive_social_layers
         first_time_ = true;
         people_sub_ = nh.subscribe("/people", 1, &SocialLayer::peopleCallback, this);
     }
-
+    
     void SocialLayer::peopleCallback(const group_msgs::People& people) {
         boost::recursive_mutex::scoped_lock lock(lock_);
         people_list_ = people;
@@ -25,15 +25,15 @@ namespace adaptive_social_layers
 
     void SocialLayer::updateBounds(double origin_x, double origin_y, double origin_z, double* min_x, double* min_y, double* max_x, double* max_y){
         boost::recursive_mutex::scoped_lock lock(lock_);
-
+        
         std::string global_frame = layered_costmap_->getGlobalFrameID();
         transformed_people_.clear();
-
+        
         for(unsigned int i=0; i<people_list_.people.size(); i++){
             group_msgs::Person& person = people_list_.people[i];
             group_msgs::Person tpt;
             geometry_msgs::PointStamped pt, opt;
-
+            
             try{
               pt.point.x = person.position.x;
               pt.point.y = person.position.y;
@@ -48,7 +48,7 @@ namespace adaptive_social_layers
               pt.point.y += person.velocity.y;
               pt.point.z += person.velocity.z;
               tf_.transformPoint(global_frame, pt, opt);
-
+              
               tpt.velocity.x = opt.point.x - tpt.position.x;
               tpt.velocity.y = opt.point.y - tpt.position.y;
               tpt.velocity.z = opt.point.z - tpt.position.z;
@@ -58,9 +58,9 @@ namespace adaptive_social_layers
 	            tpt.sx_back = person.sx_back;
               tpt.sy = person.sy;
               tpt.ospace = person.ospace;
-
+              
               transformed_people_.push_back(tpt);
-
+              
             }
             catch(tf::LookupException& ex) {
               ROS_ERROR("No Transform available Error: %s\n", ex.what());
@@ -78,9 +78,9 @@ namespace adaptive_social_layers
         updateBoundsFromPeople(min_x, min_y, max_x, max_y);
         if(first_time_){
             last_min_x_ = *min_x;
-            last_min_y_ = *min_y;
+            last_min_y_ = *min_y;    
             last_max_x_ = *max_x;
-            last_max_y_ = *max_y;
+            last_max_y_ = *max_y;    
             first_time_ = false;
         }else{
             double a = *min_x, b = *min_y, c = *max_x, d = *max_y;
@@ -92,8 +92,8 @@ namespace adaptive_social_layers
             last_min_y_ = b;
             last_max_x_ = c;
             last_max_y_ = d;
-
+        
         }
-
+        
     }
 };

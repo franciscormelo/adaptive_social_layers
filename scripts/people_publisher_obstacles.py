@@ -126,8 +126,9 @@ class PeoplePublisher():
             width = self.map.info.width 
             height = self.map.info.height 
             map = self.map.data
-            pparams_adapt, gparams_aux = adapt_parameters(groups, pparams, gparams, resolution, map, origin, width, ROBOT_DIM)
-            print(pparams_adapt)
+
+            pparams_adapt, gparams_adapt = adapt_parameters(groups, pparams, gparams, resolution, map, origin, width, ROBOT_DIM)
+            
 
             p = People()
             p.header.frame_id = "/base_footprint"
@@ -142,13 +143,12 @@ class PeoplePublisher():
                 aux_p.header.frame_id = "/base_footprint"
                 aux_p.header.stamp = rospy.Time.now()
 
-                #### MUDAR
-                gvarx = float(gparams[idx][0]) / 100.0  # cm to m
-                gvary = float(gparams[idx][1]) / 100.0  # cm to m
                 
-                #### Mudar
+                gvarx = float(gparams_adapt[idx][0]) / 100.0  # cm to m
+                gvary = float(gparams_adapt[idx][1]) / 100.0  # cm to m
                 
-    
+       
+                
                 ############## FIXED
                 # sx = 0.9
                 # sy = 0.9
@@ -163,9 +163,6 @@ class PeoplePublisher():
                     sx = pparams_adapt[idx][pidx]["sx"]/ 100.0
                     sy =  pparams_adapt[idx][pidx]["sy"] / 100.0
 
-                    print(pparams_adapt[idx][pidx])
-                    print(sy)
-                    
                     sx_back = pparams_adapt[idx][pidx]["sx_back"] / 100.0
                     
                     p1.sx = sx 
@@ -186,11 +183,11 @@ class PeoplePublisher():
                     p1.position.y = center[1] / 100.0 # cm to m
                     p1.orientation = math.pi
 
-                    #MUDAR
+                    
                     p1.sx = gvarx
                     p1.sy = gvary
 
-                    ######
+                    
                     p1.ospace = True
                     p.people.append(p1)
 

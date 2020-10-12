@@ -40,6 +40,17 @@ def calc_o_space(persons):
 
     return center
 
+
+def rotate(px, py, angle):
+    """
+    Rotate a point counterclockwise by a given angle around a given origin.
+    The angle should be given in radians.
+    """
+    qx = math.cos(angle) * px - math.sin(angle) * py
+    qy = math.sin(angle) * px + math.cos(angle) * py
+
+    return qx, qy
+
 class PeoplePublisher():
     """
     """
@@ -76,6 +87,21 @@ class PeoplePublisher():
 
         persons = []
 
+
+        listener = tf.TransformListener()
+
+        while not rospy.is_shutdown():
+            try:
+                (trans,rot) = listener.lookupTransform('/map', '/base_footprint', rospy.Time(0))
+                break
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                continue
+
+        tx = trans[0]
+        ty = trans[1]
+        (_, _, t_yaw) = tf.transformations.euler_from_quaternion(rot)
+        
+
         ap_points = PoseArray()
         ap_points.header.frame_id = "/base_footprint"
         ap_points.header.stamp = rospy.Time.now()
@@ -92,7 +118,7 @@ class PeoplePublisher():
                 quaternion = [pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w]
 
 
-                ######################
+                ###################### Pose Array Marker of the individuals
                 ap_pose = Pose()
                 ap_pose.position.x = pose.position.x
                 ap_pose.position.y = pose.position.y
@@ -106,10 +132,18 @@ class PeoplePublisher():
                 ap_points.poses.append(ap_pose)
                 #########################
                 (_, _, yaw) = tf.transformations.euler_from_quaternion(quaternion)
-                print(yaw)
-                pose_person = [pose.position.x * 100, pose.position.y * 100,yaw]
+
+                # Pose transformation from base footprint frame to map frame
+                (px, py) = rotate(pose.position.x, pose.position.y, t_yaw)
+                pose_x = px + tx
+                pose_y = py + ty
+                pose_yaw = yaw + t_yaw
+
+
+                pose_person = (pose_x  * 100, pose_y * 100,  pose_yaw)
                 persons.append(pose_person)
-            self.pubd.publish(ap_points)
+
+            self.pubd.publish(ap_points) # Pose Array of individuals publisher
 
         # Run GCFF gcff.m Matlab function      
         if persons:
@@ -119,21 +153,19 @@ class PeoplePublisher():
             app = SpaceModeling(groups) # Space modeling works in cm
             pparams,gparams = app.solve()
 
-            ####
-            # Inserir aqui parametros adaptados com obstaculos
-            ####
+      
 
             p = People()
-            p.header.frame_id = "/base_footprint"
+            p.header.frame_id = "/map"
             p.header.stamp = rospy.Time.now()
 
             g = Groups()
-            g.header.frame_id = "/base_footprint"
+            g.header.frame_id = "/map"
             g.header.stamp = rospy.Time.now()
             
             for idx,group in enumerate(groups):
                 aux_p = People()
-                aux_p.header.frame_id = "/base_footprint"
+                aux_p.header.frame_id = "/map"
                 aux_p.header.stamp = rospy.Time.now()
 
                 sx = (float(pparams[idx][0])/100) # cm to m
@@ -185,12 +217,12 @@ class PeoplePublisher():
 
         else:
             p = People()
-            p.header.frame_id = "/base_footprint"
+            p.header.frame_id = "/map"
             p.header.stamp = rospy.Time.now()
             self.pub.publish(p)
 
             g = Groups()
-            g.header.frame_id = "/base_footprint"
+            g.header.frame_id = "/map"
             g.header.stamp = rospy.Time.now()
             self.pubg.publish(g)
 
