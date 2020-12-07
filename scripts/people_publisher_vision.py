@@ -63,7 +63,7 @@ class PeoplePublisher():
         """
         rospy.init_node('PeoplePublisher', anonymous=True)
         
-        rospy.Subscriber("/faces_vision",TrackedPersonsList,self.callback,queue_size=1)
+        rospy.Subscriber("/human_awareness_tracker/trackers_list",TrackedPersonsList,self.callback,queue_size=1)
         self.loop_rate = rospy.Rate(rospy.get_param('~loop_rate', 10.0))
         self.pose_received = False
 
