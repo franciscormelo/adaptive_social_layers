@@ -69,7 +69,15 @@ for i = 1:length(u)
     means = mean( loc(labels==u(i),:), 1) ;
     labels(labels==u(i)) = i-1 ;
     % dist(:,i)=((loc-means)**2).sum(2) %%you need to use repmat here, or some kind of built in L_2 norm on a matrix of vectors
-    distmat(:,i) = pdist2(loc,means).^2 ;
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    A = loc;
+    B = means;
+    tmpB(1,:,:)=B';
+    x=repmat(tmpB,[size(A,1),1,1]);
+    y=repmat(A,[1,1,size(x,3)]);
+    distmat(:,i)=sum(abs(x-y),2).^2;
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %distmat(:,i) = pdist2(loc,means).^2 ;
     %computed sum-squares distance, now
     mask = find( distmat(:,i)<mdl ) ;
     disp = f(:,2:3) - repmat(means,[size(distmat,1),1]) ;

@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-import matlab.engine
-eng = matlab.engine.start_matlab()
-eng.cd(r'/home/flash/catkin_ws/src/adaptive_social_layers/scripts', nargout=0)
-
 import rospy
 from group_msgs.msg import People, Person, Groups
 from people_msgs.msg import People as Ppl
@@ -15,7 +11,9 @@ import copy
 
 import actionlib
 
-
+import matlab.engine
+eng = matlab.engine.start_matlab()
+eng.cd(r'/home/flash/catkin_ws/src/adaptive_social_layers/scripts', nargout=0)
 
 STRIDE = 65 # in cm
 MDL = 8000

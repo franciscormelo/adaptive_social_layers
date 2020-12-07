@@ -11,6 +11,9 @@ from algorithm import SpaceModeling
 import copy
 from visualization_msgs.msg import Marker
 
+from human_awareness_msgs.msg import PersonTracker, TrackedPersonsList
+
+
 import actionlib
 
 import matlab.engine
@@ -60,7 +63,7 @@ class PeoplePublisher():
         """
         rospy.init_node('PeoplePublisher', anonymous=True)
         
-        rospy.Subscriber("/faces",PoseArray,self.callback,queue_size=1)
+        rospy.Subscriber("/faces_vision",TrackedPersonsList,self.callback,queue_size=1)
         self.loop_rate = rospy.Rate(rospy.get_param('~loop_rate', 10.0))
         self.pose_received = False
 
@@ -107,12 +110,13 @@ class PeoplePublisher():
         ap_points.header.frame_id = "/base_footprint"
         ap_points.header.stamp = rospy.Time.now()
 
-        if not data.poses:
+        if not data.personList:
             groups = []
         else:
-            for pose in data.poses:
+            for poseinfo in data.personList:
 
                 rospy.loginfo("Person Detected")
+                pose = poseinfo.body_pose
 
 
                 
