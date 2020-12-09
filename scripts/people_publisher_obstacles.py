@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-import matlab.engine
-eng = matlab.engine.start_matlab()
-eng.cd(r'/home/flash/catkin_ws/src/adaptive_social_layers/scripts', nargout=0)
+
 
 import rospy
 from nav_msgs.msg import OccupancyGrid
@@ -18,6 +16,9 @@ import copy
 import actionlib
 import numpy as np
 
+import matlab.engine
+eng = matlab.engine.start_matlab()
+eng.cd(r'/home/flash/catkin_ws/src/adaptive_social_layers/scripts', nargout=0)
 
 STRIDE = 65 # in cm
 MDL = 8000

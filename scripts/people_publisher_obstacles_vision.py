@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 
+
 import rospy
 from nav_msgs.msg import OccupancyGrid
 from map_msgs.msg import OccupancyGridUpdate
@@ -8,6 +9,8 @@ from group_msgs.msg import People, Person, Groups
 from geometry_msgs.msg import Pose, PoseArray
 from algorithm import SpaceModeling
 from obstacles import adapt_parameters
+
+from human_awareness_msgs.msg import PersonTracker, TrackedPersonsList
 
 import tf
 import math
@@ -19,7 +22,6 @@ import matlab.engine
 eng = matlab.engine.start_matlab()
 eng.cd(r'/home/flash/catkin_ws/src/adaptive_social_layers/scripts', nargout=0)
 
-
 STRIDE = 65 # in cm
 MDL = 8000
 
@@ -27,7 +29,7 @@ MDL = 8000
 BACK_FACTOR = 1.3
 
 # Robot radius
-ROBOT_DIM = 60 # in cm
+ROBOT_DIM = 100 # in cm
 
 def calc_o_space(persons):
     """Calculates the o-space center of the group given group members pose"""
@@ -45,6 +47,16 @@ def calc_o_space(persons):
 
     return center
 
+def rotate(px, py, angle):
+    """
+    Rotate a point counterclockwise by a given angle around a given origin.
+    The angle should be given in radians.
+    """
+    qx = math.cos(angle) * px - math.sin(angle) * py
+    qy = math.sin(angle) * px + math.cos(angle) * py
+
+    return qx, qy
+
 def get_index(x, y, width):
     """ """
     
@@ -58,15 +70,13 @@ class PeoplePublisher():
         """
         rospy.init_node('PeoplePublisher', anonymous=True)
         
-        rospy.Subscriber("/faces",PoseArray,self.callback,queue_size=1)
-                # https://answers.ros.org/question/207620/global-costmap-update/
+        rospy.Subscriber("/human_awareness_tracker/trackers_list",TrackedPersonsList,self.callback,queue_size=1)
+                # https://answers.ros.org/question/207620/global-map-update/
         # We need to subscribe both costmap and costmap update topic
-        rospy.Subscriber("/move_base_flex/global_costmap/costmap",OccupancyGrid , self.callbackCm, queue_size=1)
-        rospy.Subscriber("/move_base_flex/global_costmap/costmap_updates",OccupancyGridUpdate , self.callbackCmUp, queue_size=10)
+        rospy.Subscriber("/map",OccupancyGrid , self.callbackCm, queue_size=1)
         self.loop_rate = rospy.Rate(rospy.get_param('~loop_rate', 10.0))
 
-        self.costmap_received = False
-        self.costmap_up_received = False
+        self.map_received = False
         self.pose_received = False
 
         self.data = None
@@ -85,33 +95,10 @@ class PeoplePublisher():
     def callbackCm(self, data):
         """ Costmap Callback. """
 
-        self.costmap = data
-        self.costmap_grid = list(data.data)
-        self.costmap_received = True
-
-
-    def callbackCmUp(self, data):
-        """ Costmap Update Callback. """
-
-        #https://answers.ros.org/question/207620/global-costmap-update/
-        # We have to update the global costmap with the global costmap update
-        if self.costmap_received:
-            self.costmap_up = data
-            self.costmap_up_received = True
-
-            # Update global costmap
-            idx = 0
-
-            for y in range(self.costmap_up.y, self.costmap_up.y + self.costmap_up.height):
-                for x in range(self.costmap_up.x, self.costmap_up.x + self.costmap_up.width):
-                
-                    
-                    self.costmap_grid[get_index(x,y, self.costmap.info.height)] = self.costmap_up.data[idx]
-                    idx +=1
-
-            self.costmap.data = tuple(self.costmap_grid)
+        self.map = data
+        self.map_grid = list(data.data)
+        self.map_received = True
             
-
     def publish(self):
         """
         """
@@ -122,17 +109,38 @@ class PeoplePublisher():
 
         persons = []
 
-        if not data.poses:
+        listener = tf.TransformListener()
+
+        while not rospy.is_shutdown():
+            try:
+                (trans,rot) = listener.lookupTransform('/map', '/base_footprint', rospy.Time(0))
+                break
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                continue
+
+        tx = trans[0]
+        ty = trans[1]
+        (_, _, t_yaw) = tf.transformations.euler_from_quaternion(rot)
+
+        if not data.personList:
             groups = []
         else:
-            for pose in data.poses:
+            for poseinfo in data.personList:
 
                 rospy.loginfo("Person Detected")
-                
+                pose = poseinfo.body_pose
                 quartenion = [pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w]
                 (_, _, yaw) = tf.transformations.euler_from_quaternion(quartenion)
 
-                pose_person = [pose.position.x * 100, pose.position.y * 100,yaw]
+                
+                # Pose transformation from base footprint frame to map frame
+                (px, py) = rotate(pose.position.x, pose.position.y, t_yaw)
+                pose_x = px + tx
+                pose_y = py + ty
+                pose_yaw = yaw + t_yaw
+
+
+                pose_person = (pose_x  * 100, pose_y * 100,  pose_yaw)
                 persons.append(pose_person)
 
         # Run GCFF gcff.m Matlab function      
@@ -145,54 +153,55 @@ class PeoplePublisher():
 
             ####
             # Obstacles works in cm -> Convert to meters
-            ox = self.costmap.info.origin.position.x * 100
-            oy = self.costmap.info.origin.position.y * 100
+            ox = self.map.info.origin.position.x * 100
+            oy = self.map.info.origin.position.y * 100
             origin = [ox, oy]
-            resolution = self.costmap.info.resolution * 100
-            width = self.costmap.info.width 
-            height = self.costmap.info.height 
-            costmap = self.costmap.data
-            pparams_aux, gparams_aux = adapt_parameters(groups, pparams, gparams, resolution, costmap, origin, width, ROBOT_DIM)
-            ####
+            resolution = self.map.info.resolution * 100
+            width = self.map.info.width 
+            height = self.map.info.height 
+            map = self.map.data
 
-            print(pparams_aux)
+            pparams_adapt, gparams_adapt = adapt_parameters(groups, pparams, gparams, resolution, map, origin, width, ROBOT_DIM)
+            
 
             p = People()
-            p.header.frame_id = "/base_footprint"
+            p.header.frame_id = "/map"
             p.header.stamp = rospy.Time.now()
 
             g = Groups()
-            g.header.frame_id = "/base_footprint"
+            g.header.frame_id = "/map"
             g.header.stamp = rospy.Time.now()
             
             for idx,group in enumerate(groups):
                 aux_p = People()
-                aux_p.header.frame_id = "/base_footprint"
+                aux_p.header.frame_id = "/map"
                 aux_p.header.stamp = rospy.Time.now()
 
-                #### MUDAR
-                sx = (float(pparams[idx][0])/100) # cm to m
-                sy = float(pparams[idx][1])/100 # cm to m
-                gvarx = float(gparams[idx][0]) / 100  # cm to m
-                gvary = float(gparams[idx][1]) / 100  # cm to m
                 
-                #### Mudar
+                gvarx = float(gparams_adapt[idx][0]) / 100.0  # cm to m
+                gvary = float(gparams_adapt[idx][1]) / 100.0  # cm to m
                 
-    
+       
+                
                 ############## FIXED
                 # sx = 0.9
                 # sy = 0.9
                 #########################
-                for person in group:
+                for pidx, person in enumerate(group):
 
                     p1 = Person()
-                    p1.position.x = person[0] / 100 # cm to m
-                    p1.position.y = person[1] / 100 # cm to m
+                    p1.position.x = person[0] / 100.0 # cm to m
+                    p1.position.y = person[1] / 100.0 # cm to m
                     p1.orientation = person[2]
-                   
+
+                    sx = pparams_adapt[idx][pidx]["sx"]/ 100.0
+                    sy =  pparams_adapt[idx][pidx]["sy"] / 100.0
+
+                    sx_back = pparams_adapt[idx][pidx]["sx_back"] / 100.0
+                    
                     p1.sx = sx 
                     p1.sy = sy 
-                    p1.sx_back = p1.sx / BACK_FACTOR
+                    p1.sx_back = sx_back 
                     
                     p1.ospace = False
                     p.people.append(p1)
@@ -204,8 +213,8 @@ class PeoplePublisher():
                 if len(group) > 1:
                     p1 = Person()
                     center = calc_o_space(group)
-                    p1.position.x = center[0] / 100 # cm to m
-                    p1.position.y = center[1] / 100 # cm to m
+                    p1.position.x = center[0] / 100.0 # cm to m
+                    p1.position.y = center[1] / 100.0 # cm to m
                     p1.orientation = math.pi
 
                     
@@ -226,12 +235,12 @@ class PeoplePublisher():
 
         else:
             p = People()
-            p.header.frame_id = "/base_footprint"
+            p.header.frame_id = "/map"
             p.header.stamp = rospy.Time.now()
             self.pub.publish(p)
 
             g = Groups()
-            g.header.frame_id = "/base_footprint"
+            g.header.frame_id = "/map"
             g.header.stamp = rospy.Time.now()
             self.pubg.publish(g)
 
@@ -240,10 +249,11 @@ class PeoplePublisher():
             if self.pose_received:
                 self.pose_received = False
 
-                if self.costmap_up_received:
-                    self.costmap_up_received = False
+                if self.map_received:
+                    #self.map_received = False
 
                     self.publish()
+                    
 
 if __name__ == '__main__':
     people_publisher = PeoplePublisher()
